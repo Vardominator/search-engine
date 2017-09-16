@@ -247,3 +247,8 @@ ModelManifest.xml
 
 *article*
 *all-nps-sites*
+
+# Compiled python
+*.pyc
+__pycache__
+.cache
