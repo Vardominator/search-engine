@@ -1,5 +1,8 @@
 import os
 import collections
+import shlex
+
+import queryprocessing
 
 # POSITIONAL POSTING LIST
 class PositionalPosting():
@@ -18,7 +21,7 @@ def create_index(corpus_dir, processed_docs):
 
     # WALK THROUGH DOCUMENTS AND CREATE POSITIONAL INVERTED INDEX
     for document in sample_docs:
-        terms = document.split()
+        terms = shlex.split(document)
         curr_term_position = 0
 
         for term in terms:
@@ -56,12 +59,22 @@ def print_index(index):
 
 if __name__ == "__main__":
     corpus_dir = 'data/documents'
-    sample_docs = [ "hello you dumb fuck what blah blah blah is the mean life of life",
-                    "fourscore and     seven years ago the dumb fuck made life possible",
-                    "what is up the blah people are awesome     blah most of the time",
-                    "time is precious unless you are studying blah liberal arts"]
-    
+    test_docs_dir = 'data/testdocuments'
+    sample_docs = []
+
+    for root,dirs,files in os.walk(test_docs_dir):
+        for file in files:
+            with open(os.path.join(test_docs_dir, file), 'r') as f:
+                sample_docs.append(f.read())
+
     index = create_index(corpus_dir, sample_docs)
     # print_index(index)
 
+    # TEST QUERY PROCESSOR
+    # literals = queryprocessing.process_query('bla1   + blah2 + smoothies mango + "Jamba Juice"')
+    # print(literals)
+    literals = queryprocessing.process_query('the')
+    # print(literals)
 
+    search_results = queryprocessing.query_search(literals, index)
+    print(search_results)
