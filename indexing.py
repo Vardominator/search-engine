@@ -15,31 +15,30 @@ class PositionalPosting():
         self.postings_list[1].append(position)
 
 
-def create_index(corpus_dir, processed_docs):
+def create_index(processed_docs):
     # CREATES POSITIONAL INVERTED INDEX
     pos_inv_index = {}
 
     # WALK THROUGH DOCUMENTS AND CREATE POSITIONAL INVERTED INDEX
-    for document in sample_docs:
-        terms = shlex.split(document)
+    for i in range(len(processed_docs)):
+        terms = shlex.split(processed_docs[i])
         curr_term_position = 0
-
         for term in terms:
             if term not in pos_inv_index:
                 pos_inv_index[term] = []
     
             posting_found = False
             if len(pos_inv_index[term]) == 0:
-                pos_inv_index[term].append(PositionalPosting(sample_docs.index(document), [curr_term_position]))
+                pos_inv_index[term].append(PositionalPosting(i, [curr_term_position]))
         
             else:
                 for posting in pos_inv_index[term]:
-                    if posting.postings_list[0] == sample_docs.index(document):
+                    if posting.postings_list[0] == i:
                         posting_found = True
                         posting.postings_list[1].append(curr_term_position)
         
                 if not posting_found:
-                    pos_inv_index[term].append(PositionalPosting(sample_docs.index(document), [curr_term_position]))
+                    pos_inv_index[term].append(PositionalPosting(i, [curr_term_position]))
 
             curr_term_position += 1
 
@@ -63,18 +62,17 @@ if __name__ == "__main__":
     sample_docs = []
 
     for root,dirs,files in os.walk(test_docs_dir):
+        files = sorted(files)
         for file in files:
             with open(os.path.join(test_docs_dir, file), 'r') as f:
                 sample_docs.append(f.read())
 
-    index = create_index(corpus_dir, sample_docs)
+    index = create_index(sample_docs)
     # print_index(index)
 
     # TEST QUERY PROCESSOR
-    # literals = queryprocessing.process_query('bla1   + blah2 + smoothies mango + "Jamba Juice"')
-    # print(literals)
-    literals = queryprocessing.process_query('the')
-    # print(literals)
+    literals = queryprocessing.process_query('fourscore and \"Seven Years\" + people are awesome + the + possible')
 
     search_results = queryprocessing.query_search(literals, index)
     print(search_results)
+    # print(search_results)
