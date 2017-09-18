@@ -10,9 +10,9 @@ def process_query(query):
 def query_search(literals, index):
     documents_found = []
     succes_doc_ids = []
+    
     for literal in literals:
         subliterals = shlex.split(literal)
-        # print(subliterals)
 
         # COMBINE POSITIONAL POSTING OBJECTS FOR A LITERAL       
         combined_postings = list(chain.from_iterable([index[subliteral] for subliteral in subliterals]))
