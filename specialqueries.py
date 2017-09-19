@@ -1,11 +1,14 @@
 import sys
+from normalize import stem
 
 def special_queries(query):
     if query == 'q':
         sys.exit()
     elif query.startswith('stem '):
         if len(query) > 5:
-            print('Stemming word {}:'.format(query[5:]))
+            word = query[5:]
+            print('Stemming word {}:'.format(word))
+            print(stem(word))
         else:
             print('Please provide a word with the stem command.')
             print('e.g., >>>:stem word')
