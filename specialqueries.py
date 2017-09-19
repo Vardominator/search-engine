@@ -1,17 +1,17 @@
 import sys
 
-def special_queries(input):
-    if input == 'q':
+def special_queries(query):
+    if query == 'q':
         sys.exit()
-    elif input.startswith('stem '):
-        if len(input) > 6:
-            print('stemming {}:'.format(input[6:])
+    elif query.startswith('stem '):
+        if len(query) > 5:
+            print('Stemming word {}:'.format(query[5:]))
         else:
-            print('Please provide a term with the stem command.')
+            print('Please provide a word with the stem command.')
             print('e.g., >>>:stem word')
-    elif input.startswith('index '):
-        if len(input) > 7:
-            print('Indexing folder {}:'.format(input[7:]))
+    elif query.startswith('index '):
+        if len(query) > 6:
+            print('Indexing folder {}:'.format(query[6:]))
         else:
             print('Please provide a directory name with the index command.')
             print('e.g., >>>:index target_folder')
