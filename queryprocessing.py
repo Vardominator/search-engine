@@ -5,6 +5,7 @@ from operator import itemgetter
 def process_query(query):
     literals = query.split('+')
     literals = list(map(str.strip, literals))
+    # print(literals)
     return literals
 
 def query_search(literals, index):
@@ -12,7 +13,7 @@ def query_search(literals, index):
     succes_doc_ids = []
     
     for literal in literals:
-        subliterals = shlex.split(literal)
+        subliterals = literal.strip('"').split()
 
         # COMBINE POSITIONAL POSTING OBJECTS FOR A LITERAL       
         combined_postings = list(chain.from_iterable([index[subliteral] for subliteral in subliterals]))
@@ -22,7 +23,7 @@ def query_search(literals, index):
 
         # SORT LISTS BY DOCUMENT ID
         combined_postings_lists = sorted(combined_postings_lists, key=lambda t:t[0])
-
+        print(combined_postings_lists)
         # SPLIT POSTINGS BY DOCUMENT ID
         for key,doc_postings in groupby(combined_postings_lists, itemgetter(0)):
             doc_postings = list(doc_postings)

@@ -30,14 +30,13 @@ def create_index(processed_docs):
             posting_found = False
             if len(pos_inv_index[term]) == 0:
                 pos_inv_index[term].append(PositionalPosting(i, [curr_term_position]))
-        
             else:
-                for posting in pos_inv_index[term]:
-                    if posting.postings_list[0] == i:
-                        posting_found = True
-                        posting.postings_list[1].append(curr_term_position)
-        
-                if not posting_found:
+                # CHECK IF EXISTS AT THE END OF THE LIST
+                last_posting = pos_inv_index[term][-1]
+                
+                if last_posting.postings_list[0] == i:
+                    last_posting.add_position(curr_term_position)
+                else:
                     pos_inv_index[term].append(PositionalPosting(i, [curr_term_position]))
 
             curr_term_position += 1
@@ -71,7 +70,7 @@ if __name__ == "__main__":
     # print_index(index)
 
     # TEST QUERY PROCESSOR
-    literals = queryprocessing.process_query('fourscore and \"Seven Years\" + people are awesome + the + possible')
+    literals = queryprocessing.process_query('\"Seven Years\"')
 
     search_results = queryprocessing.query_search(literals, index)
     print(search_results)
