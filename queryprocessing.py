@@ -5,7 +5,7 @@ from specialqueries import special_queries
 
 def process_query(query):
     if query.startswith(':'):
-        special_queries(query)
+        special_queries(query[1:])
     else:
         literals = query.split('+')
         literals = list(map(str.strip, literals))
