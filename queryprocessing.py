@@ -1,20 +1,24 @@
 import shlex
 from itertools import chain, groupby
 from operator import itemgetter
+from specialqueries import special_queries
 
 def process_query(query):
-    literals = query.split('+')
-    literals = list(map(str.strip, literals))
-    return literals
+    if query.startswith(':'):
+        special_queries(input[1:])
+    else:
+        literals = query.split('+')
+        literals = list(map(str.strip, literals))
+        return literals
 
 def query_search(literals, index):
     documents_found = []
     succes_doc_ids = []
-    
+
     for literal in literals:
         subliterals = shlex.split(literal)
 
-        # COMBINE POSITIONAL POSTING OBJECTS FOR A LITERAL       
+        # COMBINE POSITIONAL POSTING OBJECTS FOR A LITERAL
         combined_postings = list(chain.from_iterable([index[subliteral] for subliteral in subliterals]))
 
         # EXTRACT POSTINGS LISTS FOR EVERY POSITIONAL POSTING OBJECT
@@ -48,7 +52,7 @@ def query_search(literals, index):
                         else:
                             if j < len(right_list):
                                 j += 1
-                
+
                     if left_list[i] + 1 != right_list[j]:
                         subliteral_found = False
                         break
