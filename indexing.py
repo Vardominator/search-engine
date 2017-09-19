@@ -54,7 +54,6 @@ def print_index(index):
         for posting in index[key]:
             print(posting.postings_list)
 
-
 if __name__ == "__main__":
     corpus_dir = 'data/documents'
     test_docs_dir = 'data/testdocuments'
@@ -70,7 +69,19 @@ if __name__ == "__main__":
     # print_index(index)
 
     # TEST QUERY PROCESSOR
-    literals = queryprocessing.process_query('\"Seven Years\"')
+
+    # MUST RETURN [2,4,6]
+    # literals = queryprocessing.process_query('\"Seven Years\" fuck asdfasd + awesome + crazy awesome')
+
+    # MUST RETURN [1,2,4,6]
+    # literals = queryprocessing.process_query('\"Seven Years\" fuck+ awesome + crazy awesome')
+
+    # MUST RETURN [4]
+    # literals = queryprocessing.process_query('crazy awesome')
+    
+    # MUST RETURN [0,1,5,6]
+    literals = queryprocessing.process_query('\"dumb fuck\"')
+
 
     search_results = queryprocessing.query_search(literals, index)
     print(search_results)
