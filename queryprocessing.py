@@ -6,7 +6,7 @@ from specialqueries import special_queries
 def process_query(query):
     literals = query.split('+')
     literals = list(map(str.strip, literals))
-    # print(literals)
+
     return literals
     if query.startswith(':'):
         special_queries(query[1:])
@@ -40,9 +40,7 @@ def query_search(literals, index):
             
             # SORT LISTS BY DOCUMENT ID
             combined_postings_lists = sorted(combined_postings_lists, key=lambda t:t[0])
-            print(subliterals)
-            # print(combined_postings_lists)
-
+            
             docs_with_current_query = []
             found_count = 0
             # SPLIT POSTINGS BY DOCUMENT ID
@@ -84,13 +82,8 @@ def query_search(literals, index):
 
             docs_with_all_queries.append(docs_with_current_query)
 
-        print(docs_with_all_queries)
         # UNIONIZE DOC IDs WITH SUCCESSFUL QUERIES
         ids_intersect = list(set.intersection(*map(set, docs_with_all_queries)))
         succes_doc_ids.extend(ids_intersect)
 
     return sorted(set(succes_doc_ids))
-
-if __name__ == "__main__":
-    literals = process_query('fourscore and \"Seven Years\"')
-    # print(literals)

@@ -82,6 +82,11 @@ if __name__ == "__main__":
     # MUST RETURN [0,1,5,6]
     literals = queryprocessing.process_query('\"dumb fuck\"')
 
+    # MUST RETURN [1,5,6]
+    # literals = queryprocessing.process_query('\"dumb fuck\" ago')
+
+    # literals = queryprocessing.process_query('asdfasdf')
+    literals = queryprocessing.process_query('nano')
 
     search_results = queryprocessing.query_search(literals, index)
     print(search_results)
