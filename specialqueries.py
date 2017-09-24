@@ -1,3 +1,4 @@
+"""This should be moved over to query processing when finished"""
 import sys
 from normalize import stem
 
@@ -22,3 +23,14 @@ def special_queries(query):
         print('Printing all terms in the vocabulary:')
     else:
         print('Unrecognized command')
+
+
+# Unsure if we need to pass KGramIndex after moving these functions around, but this works for now
+def wildcard_query(query, kgram_index):
+    if not query.startswith('*'):
+        query = '$' + query
+    if not query.endswith('*'):
+        query = query + '$'
+    gram_list = query.split('*')
+    gram_list = list(filter(None, gram_list))
+    return kgram_index.get_intersection_grams(set(gram_list))

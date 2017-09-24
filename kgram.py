@@ -1,4 +1,5 @@
 """KGramIndex class file"""
+from itertools import chain
 
 class KGramIndex(object):
     """Pydoc inc, going to work on this a lot more but base functionality is here"""
@@ -29,7 +30,8 @@ class KGramIndex(object):
             print('Empty list passed to kgram parser.')
 
     def get_words(self, gram):
-        """Returns a list of all words found containing kgram from index"""
+        """Returns a list of all words found containing kgram from index.
+           Ensure that grams include '$' symbol"""
         if gram in self.index:
             return self.index[gram]
         else:
@@ -37,11 +39,20 @@ class KGramIndex(object):
             return []
 
     def get_intersection_grams(self, grams):
+        """Gets words that share the grams in common."""
+        # Get a set of grams that are the correct size by either returning a gram or splitting it
+        grams = set(chain(*[self.split_gram(gram) for gram in grams]))
         gram_sets = []
         for gram in grams:
             gram_sets.append(set(self.get_words(gram)))
         return set.intersection(*gram_sets)
 
+    def split_gram(self, gram):
+        """Splits a gram that is too long by returning a list of the largest subgrams"""
+        if len(gram) <= self.num_grams:
+            return [gram]
+        max_len = self.num_grams
+        return [gram[ind:ind+(max_len)] for ind in range(0, len(gram) - max_len + 1, 1)]
 
     @staticmethod
     def print_kgrams(kgram_number, word):
