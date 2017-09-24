@@ -253,6 +253,7 @@ ModelManifest.xml
 __pycache__
 .cache
 
-# semantic ui packages
+# semantic ui 
 node_modules/
 semantic/
+semantic-ui-sandbox/

@@ -21,5 +21,8 @@
 * Run the following:
   * gulp build
 
+### Install a CORS plugin for your browser to enable local Http requests
+* Simply search 'cors' for you browser plugin and install the most popular one
+
 ### Test by opening semantictest.html
 * There should be styled like and share buttons

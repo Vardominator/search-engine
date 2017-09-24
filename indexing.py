@@ -1,6 +1,7 @@
 import os
 import collections
 import shlex
+import json
 
 import queryprocessing
 
@@ -66,7 +67,8 @@ if __name__ == "__main__":
                 sample_docs.append(f.read())
 
     index = create_index(sample_docs)
-    # print_index(index)
+    print(index.keys())
+    # print_index(index.keys()))
 
     # TEST QUERY PROCESSOR
 
@@ -86,7 +88,10 @@ if __name__ == "__main__":
     # literals = queryprocessing.process_query('\"dumb fuck\" ago')
 
     # literals = queryprocessing.process_query('asdfasdf')
-    literals = queryprocessing.process_query('nano')
+    # literals = queryprocessing.process_query('nano')
+
+    # MUST RETURN [7]
+    literals = queryprocessing.process_query('\"dumb fuck\"')
 
     search_results = queryprocessing.query_search(literals, index)
     print(search_results)
