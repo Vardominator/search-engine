@@ -17,25 +17,70 @@
 
 <body>
 
-    <div>
-      <button id="buildindex_button" class="ui primary button">
-        Build Index
-      </button>
+  <div class="ui container">
+    <br>
+
+    <h1 class="ui huge header">Vardo's & Nick's Bada$$ Search Engine</h1>
+
+    <hr>
+    <br>
+    
+    <div class="ui grid">
+
+      <div class="eight wide column">
+        <div class="ui fluid input focus">
+            <input id="dir_input" type="text" placeholder="Directory...">
+        </div>
+      </div>
+
+      <div class="eight wide column">
+        <button id="buildindex_button" class="ui disabled primary fluid button">
+          Build Index
+        </button>
+      </div>
+
     </div>
 
-    <div class="ui icon input loading">
-        <input type="text" placeholder="Search documents...">
-        <i class="search icon"></i>
+    <table class="ui celled padded table">
+      <thead>
+        <tr>
+          <th class="single line center aligned">Document Count</th>
+          <th class="single line center aligned">Terms Extracted</th>
+        </tr>
+      <tbody>
+      </thead>
+        <tr>
+          <td>
+            <h2 id="document_count" class="ui center aligned header">
+              0
+            </h2>
+          </td>
+          <td>
+            <h2 id="term_count" class="ui center aligned header">
+              0
+            </h2>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="ui grid">
+      
+      <div class="sixteen wide column">
+        <div class="ui icon input fluid">
+            <input id="query" type="text" placeholder="Query documents...">
+            <i class="search icon"></i>
+        </div>
       </div>
-    
-    <div>
-      <button id="search_button" class="ui primary button">
-        Search
-      </button>
-      <button class="ui button">
-        Clear
-      </button>
+
+      <div class="eight wide column">
+
+      </div>
+
     </div>
+
+
+  </div>
 
     <script src="test.js"></script>
 </body>
