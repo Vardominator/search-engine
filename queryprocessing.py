@@ -4,10 +4,6 @@ from operator import itemgetter
 from specialqueries import special_queries
 
 def process_query(query):
-    literals = query.split('+')
-    literals = list(map(str.strip, literals))
-
-    return literals
     if query.startswith(':'):
         special_queries(query[1:])
     else:
