@@ -2,6 +2,7 @@ import shlex
 from itertools import chain, groupby
 from operator import itemgetter
 from specialqueries import special_queries
+import normalize
 
 def process_query(query):
     if query.startswith(':'):
@@ -18,7 +19,9 @@ def query_search(literals, index):
         queries = shlex.split(literal)
 
         all_terms = literal.replace('"', '').split()
+        all_terms = [normalize.query_normalize(word) for word in all_terms]
         queries_found = 0
+        # all_terms = [normalize.normalize(term) for term in all_terms]
         # SKIP IF ALL TERMS IN SUBLITERAL ARE NOT IN INDEX
         if not all(term in index for term in all_terms):
             continue
@@ -28,7 +31,7 @@ def query_search(literals, index):
         for subliterals in queries:       
             # SPLIT IF PHRASE CONTAINS MULTIPLE WORDS
             subliterals = subliterals.split()
-
+            subliterals = [normalize.query_normalize(term) for term in subliterals]
             # COMBINE POSITIONAL POSTING OBJECTS FOR A LITERAL
             combined_postings = list(chain.from_iterable([index[subliteral] for subliteral in subliterals]))
             # EXTRACT POSTINGS LISTS FOR EVERY POSITIONAL POSTING OBJECT

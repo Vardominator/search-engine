@@ -2,6 +2,7 @@ import os
 import collections
 import shlex
 import json
+import normalize
 
 import queryprocessing
 
@@ -24,21 +25,23 @@ def create_index(processed_docs):
     for i in range(len(processed_docs)):
         terms = shlex.split(processed_docs[i])
         curr_term_position = 0
-        for term in terms:
-            if term not in pos_inv_index:
-                pos_inv_index[term] = []
-    
-            posting_found = False
-            if len(pos_inv_index[term]) == 0:
-                pos_inv_index[term].append(PositionalPosting(i, [curr_term_position]))
-            else:
-                # CHECK IF EXISTS AT THE END OF THE LIST
-                last_posting = pos_inv_index[term][-1]
-                
-                if last_posting.postings_list[0] == i:
-                    last_posting.add_position(curr_term_position)
-                else:
+        for word in terms:
+            term_list = normalize.normalize(word)
+            for term in term_list:
+                if term not in pos_inv_index:
+                    pos_inv_index[term] = []
+        
+                posting_found = False
+                if len(pos_inv_index[term]) == 0:
                     pos_inv_index[term].append(PositionalPosting(i, [curr_term_position]))
+                else:
+                    # CHECK IF EXISTS AT THE END OF THE LIST
+                    last_posting = pos_inv_index[term][-1]
+                    
+                    if last_posting.postings_list[0] == i:
+                        last_posting.add_position(curr_term_position)
+                    else:
+                        pos_inv_index[term].append(PositionalPosting(i, [curr_term_position]))
 
             curr_term_position += 1
 
@@ -67,7 +70,6 @@ if __name__ == "__main__":
                 sample_docs.append(f.read())
 
     index = create_index(sample_docs)
-    print(index.keys())
     # print_index(index.keys()))
 
     # TEST QUERY PROCESSOR
@@ -82,7 +84,7 @@ if __name__ == "__main__":
     # literals = queryprocessing.process_query('crazy awesome')
     
     # MUST RETURN [0,1,5,6]
-    literals = queryprocessing.process_query('\"dumb fuck\"')
+    # literals = queryprocessing.process_query('\"dumb fuck\"')
 
     # MUST RETURN [1,5,6]
     # literals = queryprocessing.process_query('\"dumb fuck\" ago')
@@ -91,8 +93,9 @@ if __name__ == "__main__":
     # literals = queryprocessing.process_query('nano')
 
     # MUST RETURN [7]
-    literals = queryprocessing.process_query('\"dumb fuck\"')
-
-    search_results = queryprocessing.query_search(literals, index)
-    print(search_results)
+    literals = queryprocessing.process_query(':stem conspicuous')
+    print(literals)
+    if literals:
+        search_results = queryprocessing.query_search(literals, index)
+        print(search_results)
     # print(search_results)

@@ -12,6 +12,7 @@ def normalize(word):
     word = remove_special_characters(word)
     word_set = dehyphenate(word)
     word_list = [stem(token) for token in word_set]
+    print(word_list)
     return word_list
 
 
@@ -36,3 +37,9 @@ def dehyphenate(word):
         word_list = word.split('-')
         word_list.append(word)
         return set(word_list)
+
+def query_normalize(word):
+    word = remove_special_characters(word)
+    word = stem(word)
+    print(word)
+    return word
