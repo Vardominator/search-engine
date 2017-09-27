@@ -55,6 +55,7 @@ def query_search(literals, index):
                         for a in range(len(posting_lists) - 1):
                             left_list = posting_lists[a]
                             right_list = posting_lists[a + 1]
+
                             i = 0
                             j = 0
 
@@ -66,7 +67,7 @@ def query_search(literals, index):
                                     increment_found = True
                                     break
                                 else:
-                                    if j < len(right_list):
+                                    if j < len(right_list) - 1:
                                         j += 1
 
                             if left_list[i] + 1 != right_list[j]:

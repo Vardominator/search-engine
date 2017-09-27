@@ -26,3 +26,11 @@
 
 ### Test by opening semantictest.html
 * There should be styled like and share buttons
+
+### Features to add to GUI
+* Most recent query
+* loading modal
+* Number of documents returned
+* Scroll box for returned files
+* Document titles
+* Click title to show body

@@ -2,6 +2,7 @@ import os
 import collections
 import shlex
 import json
+
 import normalize
 
 import queryprocessing
@@ -23,7 +24,8 @@ def create_index(processed_docs):
 
     # WALK THROUGH DOCUMENTS AND CREATE POSITIONAL INVERTED INDEX
     for i in range(len(processed_docs)):
-        terms = shlex.split(processed_docs[i])
+        # print(processed_docs[i])
+        terms = processed_docs[i].split()
         curr_term_position = 0
         for word in terms:
             term_list = normalize.normalize(word)

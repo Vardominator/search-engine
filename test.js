@@ -1,5 +1,8 @@
 $(document).ready(function(){
 
+    var documentBodies = {};
+
+    // ENABLES 'Build Index' BUTTON IF CORPUS DIRECTORY IS INSERTED
     $('#dir_input').change(function(e){
         if($('#dir_input').val() != ''){
             $('#buildindex_button').removeClass('disabled');
@@ -9,6 +12,9 @@ $(document).ready(function(){
     });
     
     $("#buildindex_button").click(function(e){
+        
+        $('#building_index_loader').show();
+
         var dir = $('#dir_input').val();
         $.ajax({
             type: "POST",
@@ -21,6 +27,9 @@ $(document).ready(function(){
     });
 
     $("#query").change(function(e){
+
+        $('#retrieve_documents_loader').show();
+
         var query_input = $('#query').val();
 
         $.ajax({
@@ -30,8 +39,16 @@ $(document).ready(function(){
             success: buildRelevantList
         });
 
+        $("#last_query").text($("#query").val());
         $('#query').val("");
 
+    });
+
+    $(document).on("click", "#title_icon", function () {
+        var selectedTitle = $(this).text();
+        var selectedBody = documentBodies[selectedTitle];
+        $('#selected_document_title').text(selectedTitle);
+        $('#selected_document_body').text(selectedBody);
     });
 
     function populateTable(response){
@@ -39,6 +56,7 @@ $(document).ready(function(){
         console.log(res);
         $("#document_count").text(res.doc_count);
         $("#term_count").text(res.term_count);
+        $('#building_index_loader').hide()
     }
 
     function buildRelevantList(response){
@@ -47,24 +65,36 @@ $(document).ready(function(){
         $("#relevant_list").empty()
         $.each(res.files, function(index, file){
 
-            content = res.contents[file];
-            if(content.length > 80){
-                content = content.substring(0, 100);
-                content = content + "...";
+            title = res.contents[file]['title'];
+            body = res.contents[file]['body'];
+
+            documentBodies[title] = body;
+
+            if(body.length > 75){
+                body = body.substring(0, 75);
+                body = body + "...";
             }
 
             $("#relevant_list").append(
             '<div class="item">' + 
                 '<i class="map marker icon"></i>' + 
                 '<div class="content">' +
-                    '<a class="header">' + file + '</a>' +
+                    '<a class="header" id="title_icon">' + title + '</a>' +
                     '<div class="description">' +
-                        "blah" + content + 
+                        body + 
                     '</div>'
                 + '</div>'
             + '</div>');
-        });1
-        
+        });
+
+        $('#retrieve_documents_loader').hide();
+
+        $("#documents_found").text(res.files.length);
+
+    }
+
+    function showFullDocument(response){
+        console.log(response);
     }
 
     function successCallBack(response){

@@ -41,6 +41,12 @@
 
     </div>
 
+
+    <div class="ui active inverted dimmer" id="building_index_loader" style="display:none">
+      <div class="ui large text loader">Building Index</div>
+    </div>
+
+
     <table class="ui celled padded table">
       <thead>
         <tr>
@@ -64,33 +70,61 @@
       </tbody>
     </table>
 
-    <div class="ui grid">
-      
-      <div class="sixteen wide column">
-        <div class="ui icon input fluid">
-            <input id="query" type="text" placeholder="Query documents...">
-            <i class="search icon"></i>
+    <br>
+
+
+    <div class="ui icon input fluid">
+        <input id="query" type="text" placeholder="Query documents...">
+        <i class="search icon"></i>
+    </div>
+
+    <div class="ui active inverted dimmer" id="retrieve_documents_loader" style="display:none">
+      <div class="ui large text loader">Retrieving Documents</div>
+    </div>
+
+    <br><br>
+
+    <div class="ui grid" style="height:450px;">
+      <div class="eight wide column">
+        <div id="relevant_list" class="ui list" style="height:100%;overflow:scroll;">
+
         </div>
       </div>
 
       <div class="eight wide column">
-
-      </div>
-
-    </div>
-
-
-
-
-    <div class="ui grid">
-      <div class="eight wide column">
-        <div id="relevant_list" class="ui list">
-
+        <div class="ui piled segment" style="height:100%;overflow:scroll;">
+          <h4 class="ui header" id="selected_document_title"></h4>
+          <p id="selected_document_body"></p>
         </div>
       </div>
+  
     </div>
 
 
+
+    <table class="ui definition table">
+        <tbody>
+          <tr>
+            <td >Last query</td>
+            <td id="last_query"></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            
+          </tr>
+          <tr>
+            <td>Documents found</td>
+            <td id="documents_found"></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            
+          </tr>
+      </tbody></table>
 
 
   </div>

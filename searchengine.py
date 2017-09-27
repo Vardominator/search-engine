@@ -29,10 +29,12 @@ def buildindex():
             for file in files:
                 doc_id_files[id] = file
                 id += 1
-                with open(os.path.join(docs_dir, file), 'r') as f:
-                    content = f.read()
-                    docs.append(content)
-                    file_contents[file] = content
+                with open(os.path.join(docs_dir, file), 'r') as json_data:
+                    content = json.load(json_data)
+                    docs.append(content['body'])
+                    file_contents[file] = {'body': content['body'],
+                                           'title': content['title'],
+                                           'url': content['url']}
 
         index = indexing.create_index(docs)
 
