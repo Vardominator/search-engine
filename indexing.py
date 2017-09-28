@@ -4,8 +4,8 @@ import shlex
 import json
 
 import normalize
-
 import queryprocessing
+from kgram import KGramIndex
 
 # POSITIONAL POSTING LIST
 class PositionalPosting():
@@ -21,6 +21,7 @@ class PositionalPosting():
 def create_index(processed_docs):
     # CREATES POSITIONAL INVERTED INDEX
     pos_inv_index = {}
+    kgram_index = KGramIndex(3)
 
     # WALK THROUGH DOCUMENTS AND CREATE POSITIONAL INVERTED INDEX
     for i in range(len(processed_docs)):
@@ -28,18 +29,19 @@ def create_index(processed_docs):
         terms = processed_docs[i].split()
         curr_term_position = 0
         for word in terms:
+            kgram_index.map_ngram(normalize.remove_special_characters(word))
             term_list = normalize.normalize(word)
             for term in term_list:
                 if term not in pos_inv_index:
                     pos_inv_index[term] = []
-        
+
                 posting_found = False
                 if len(pos_inv_index[term]) == 0:
                     pos_inv_index[term].append(PositionalPosting(i, [curr_term_position]))
                 else:
                     # CHECK IF EXISTS AT THE END OF THE LIST
                     last_posting = pos_inv_index[term][-1]
-                    
+
                     if last_posting.postings_list[0] == i:
                         last_posting.add_position(curr_term_position)
                     else:
@@ -48,9 +50,9 @@ def create_index(processed_docs):
             curr_term_position += 1
 
     # SORT DICTIONARY BY KEYS
-    pos_inv_index = collections.OrderedDict(sorted(pos_inv_index.items(), key=lambda t:t[0])) 
+    pos_inv_index = collections.OrderedDict(sorted(pos_inv_index.items(), key=lambda t:t[0]))
 
-    return pos_inv_index
+    return [pos_inv_index, kgram_index]
 
 
 def print_index(index):
@@ -84,7 +86,7 @@ if __name__ == "__main__":
 
     # MUST RETURN [4]
     # literals = queryprocessing.process_query('crazy awesome')
-    
+
     # MUST RETURN [0,1,5,6]
     # literals = queryprocessing.process_query('\"dumb fuck\"')
 
