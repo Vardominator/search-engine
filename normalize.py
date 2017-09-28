@@ -25,7 +25,7 @@ def remove_special_characters(word):
        word, and gets rid of any apostrophe throughout."""
     word = re.sub(r'^\W+|\W+$', '', word)
     word = word.replace("'", "")
-    return word
+    return word.lower()
 
 
 def dehyphenate(word):

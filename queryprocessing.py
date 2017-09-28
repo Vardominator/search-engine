@@ -117,7 +117,6 @@ def special_queries(query):
         print('Unrecognized command')
 
 
-# Unsure if we need to pass KGramIndex after moving these functions around, but this works for now
 def wildcard_query(query, kgram_index):
     if not query.startswith('*'):
         query = '$' + query

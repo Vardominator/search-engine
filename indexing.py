@@ -51,7 +51,6 @@ def create_index(processed_docs):
 
     # SORT DICTIONARY BY KEYS
     pos_inv_index = collections.OrderedDict(sorted(pos_inv_index.items(), key=lambda t:t[0]))
-
     return [pos_inv_index, kgram_index]
 
 
