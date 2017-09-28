@@ -1,24 +1,22 @@
 from itertools import chain
+from collections import defaultdict
 
 class KGramIndex(object):
     """Pydoc inc, going to work on this a lot more but base functionality is here"""
     def __init__(self, num_grams, vocab = None):
         self.num_grams = num_grams
-        self.index = {}
+        self.index = defaultdict(list)
         if vocab:
             self.add_to_index(vocab)
 
     def map_ngram(self, word):
         """Maps word to kgrams from 1 to k"""
         gram_word = "$" + word + "$"
-        grams = [zip(*[gram_word[i:] for i in range(num_grams)]) for num_grams in range(1, self.num_grams+1)]
+        grams = map(set, [zip(*[gram_word[i:] for i in range(num_grams)]) for num_grams in range(1, self.num_grams+1)])
         for gram_set in grams:
             for gram in gram_set:
                 gram_str = ''.join(gram)
-                if gram_str not in self.index:
-                    self.index[gram_str] = [word]
-                elif word not in self.index[gram_str]:
-                    self.index[gram_str].append(word)
+                self.index[gram_str].append(word)
 
     def add_to_index(self, input_list):
         """Iterates through input list to construct kgram index"""

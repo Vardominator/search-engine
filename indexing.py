@@ -24,6 +24,7 @@ def create_index(processed_docs):
     pos_inv_index = {}
     vocab = set()
 
+    t0 = time.time()
     # WALK THROUGH DOCUMENTS AND CREATE POSITIONAL INVERTED INDEX
     for i in range(len(processed_docs)):
         # print(processed_docs[i])
@@ -53,12 +54,13 @@ def create_index(processed_docs):
 
     # SORT DICTIONARY BY KEYS
     pos_inv_index = collections.OrderedDict(sorted(pos_inv_index.items(), key=lambda t:t[0]))
-    print("Creating kgram index:")
-    t0 = time.time()
-    kgram_index = KGramIndex(3, vocab)
     t1 = time.time()
-    print(t1-t0)
-    print("Done")
+    print("Pos index: {}".format(t1-t0))
+    print("Creating kgram index")
+    kgram_index = KGramIndex(3, vocab)
+    t2 = time.time()
+    print(t2-t1)
+    print("Total time: {}".format(t2-t0))
     return [pos_inv_index, kgram_index]
 
 
