@@ -1,4 +1,3 @@
-"""KGramIndex class file"""
 from itertools import chain
 
 class KGramIndex(object):

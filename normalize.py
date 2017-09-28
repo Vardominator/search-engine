@@ -9,7 +9,6 @@ def normalize(word):
     """Main function to normalize words, removes any special characters
        from beginning and end of word, breaks the word into a set if it
        contains a hyphen, and stems each word using the Porter2Stemmer"""
-    word = remove_special_characters(word)
     word_set = dehyphenate(word)
     word_list = [stem(token) for token in word_set]
     # print(word_list)

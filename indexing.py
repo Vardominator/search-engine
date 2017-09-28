@@ -2,6 +2,7 @@ import os
 import collections
 import shlex
 import json
+import time
 
 import normalize
 import queryprocessing
@@ -21,7 +22,7 @@ class PositionalPosting():
 def create_index(processed_docs):
     # CREATES POSITIONAL INVERTED INDEX
     pos_inv_index = {}
-    kgram_index = KGramIndex(3)
+    vocab = set()
 
     # WALK THROUGH DOCUMENTS AND CREATE POSITIONAL INVERTED INDEX
     for i in range(len(processed_docs)):
@@ -29,8 +30,9 @@ def create_index(processed_docs):
         terms = processed_docs[i].split()
         curr_term_position = 0
         for word in terms:
-            kgram_index.map_ngram(normalize.remove_special_characters(word))
-            term_list = normalize.normalize(word)
+            norm_word = normalize.remove_special_characters(word)
+            vocab.add(norm_word)
+            term_list = normalize.normalize(norm_word)
             for term in term_list:
                 if term not in pos_inv_index:
                     pos_inv_index[term] = []
@@ -51,6 +53,12 @@ def create_index(processed_docs):
 
     # SORT DICTIONARY BY KEYS
     pos_inv_index = collections.OrderedDict(sorted(pos_inv_index.items(), key=lambda t:t[0]))
+    print("Creating kgram index:")
+    t0 = time.time()
+    kgram_index = KGramIndex(3, vocab)
+    t1 = time.time()
+    print(t1-t0)
+    print("Done")
     return [pos_inv_index, kgram_index]
 
 
