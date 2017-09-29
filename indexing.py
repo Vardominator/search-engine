@@ -7,6 +7,8 @@ import normalize
 import queryprocessing
 from kgram import KGramIndex
 
+VOCAB = set()
+
 # POSITIONAL POSTING LIST
 class PositionalPosting():
     def __init__(self, doc_id, positions=[]):
@@ -21,7 +23,6 @@ class PositionalPosting():
 def create_index(processed_docs):
     # CREATES POSITIONAL INVERTED INDEX
     pos_inv_index = {}
-    vocab = set()
 
     t0 = time()
     # WALK THROUGH DOCUMENTS AND CREATE POSITIONAL INVERTED INDEX
@@ -30,7 +31,7 @@ def create_index(processed_docs):
         curr_term_position = 0
         for word in terms:
             word = normalize.remove_special_characters(word)
-            vocab.add(word)
+            VOCAB.add(word)
             term_list = normalize.normalize(word)
 
 
@@ -54,9 +55,11 @@ def create_index(processed_docs):
 
     # SORT DICTIONARY BY KEYS
     pos_inv_index = collections.OrderedDict(sorted(pos_inv_index.items(), key=lambda t:t[0]))
-    kgram_index = KGramIndex(3, vocab)
     t1 = time()
-    print("Time to build indexes: {}".format(t1-t0))
+    print("Time to build pos index: {}".format(t1-t0))
+    kgram_index = KGramIndex(3, VOCAB)
+    t2 = time()
+    print("Time to build indexes: {}".format(t2-t0))
     return [pos_inv_index, kgram_index]
 
 

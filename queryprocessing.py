@@ -9,15 +9,12 @@ from kgram import KGramIndex
 import time
 
 def process_query(query, kgram_index):
-    if query.startswith(':'):
-        special_queries(query[1:])
+    if '*' in query:
+        literals = wildcard_query(query, kgram_index)
     else:
-        if '*' in query:
-            literals = wildcard_query(query, kgram_index)
-        else:
-            literals = query.split('+')
-            literals = list(map(str.strip, literals))
-        return literals
+        literals = query.split('+')
+        literals = list(map(str.strip, literals))
+    return literals
 
 def query_search(literals, index):
     succes_doc_ids = []
@@ -97,29 +94,6 @@ def query_search(literals, index):
         succes_doc_ids.extend(ids_intersect)
 
     return sorted(set(succes_doc_ids))
-
-
-def special_queries(query):
-    if query == 'q':
-        sys.exit()
-    elif query.startswith('stem '):
-        if len(query) > 5:
-            word = query[5:]
-            print('Stemming word {}:'.format(word))
-            print(normalize.stem(word))
-        else:
-            print('Please provide a word with the stem command.')
-            print('e.g., >>>:stem word')
-    elif query.startswith('index '):
-        if len(query) > 6:
-            print('Indexing folder {}:'.format(query[6:]))
-        else:
-            print('Please provide a directory name with the index command.')
-            print('e.g., >>>:index target_folder')
-    elif input == 'vocab':
-        print('Printing all terms in the vocabulary:')
-    else:
-        print('Unrecognized command')
 
 
 def wildcard_query(query, kgram_index):
