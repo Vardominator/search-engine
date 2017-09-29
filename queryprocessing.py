@@ -32,7 +32,7 @@ def query_search(literals, index):
             subliterals = subliterals.split()
 
             subliterals = [normalize.query_normalize(term) for term in subliterals]
-
+            # print(subliterals)
             # COMBINE POSITIONAL POSTING OBJECTS FOR A LITERAL
             combined_postings = list(chain.from_iterable([index[subliteral] for subliteral in subliterals]))
             # EXTRACT POSTINGS LISTS FOR EVERY POSITIONAL POSTING OBJECT
@@ -40,7 +40,6 @@ def query_search(literals, index):
 
             # SORT LISTS BY DOCUMENT ID
             combined_postings_lists = sorted(combined_postings_lists, key=lambda t:t[0])
-            
 
             docs_with_current_query = []
             found_count = 0
@@ -51,6 +50,7 @@ def query_search(literals, index):
 
                 if len(subliterals) > 1:
                     # CHECK IF LENGTH OF POSTINGS IS THE SAME AS THE SUBLITERALS
+                    # print(doc_postings)
                     if len(doc_postings) == len(subliterals):
                         subliteral_found = True
 

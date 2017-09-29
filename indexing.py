@@ -115,6 +115,6 @@ if __name__ == "__main__":
     #     print(search_results)
     # print(search_results)
 
-    literals = queryprocessing.process_query('\"annual fun run\" friends')
+    literals = queryprocessing.process_query('\"The map at left shows the tracts in relation to each other\" + \"acquisition of florida power\" everglades + \"read a variety of stories that tell about soldiers\" + \"nps central\"')
     search_results = queryprocessing.query_search(literals, index)
     print(search_results)
