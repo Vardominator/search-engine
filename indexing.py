@@ -30,25 +30,15 @@ def create_index(processed_docs):
         terms = processed_docs[i].split()
         curr_term_position = 0
         for word in terms:
-<<<<<<< HEAD
             
             term_list = normalize.normalize(word)
             
 
-=======
-            norm_word = normalize.remove_special_characters(word)
-            vocab.add(norm_word)
-            term_list = normalize.normalize(norm_word)
->>>>>>> a15a16df9a8745bce6ad1b07a7c77ae1a9a5f4ae
             for term in term_list:
 
                 if term not in pos_inv_index:
                     pos_inv_index[term] = []
 
-<<<<<<< HEAD
-=======
-                posting_found = False
->>>>>>> a15a16df9a8745bce6ad1b07a7c77ae1a9a5f4ae
                 if len(pos_inv_index[term]) == 0:
                     pos_inv_index[term].append(PositionalPosting(i, [curr_term_position]))
                 else:
@@ -64,18 +54,7 @@ def create_index(processed_docs):
 
     # SORT DICTIONARY BY KEYS
     pos_inv_index = collections.OrderedDict(sorted(pos_inv_index.items(), key=lambda t:t[0]))
-<<<<<<< HEAD
     return pos_inv_index
-=======
-    t1 = time.time()
-    print("Pos index: {}".format(t1-t0))
-    print("Creating kgram index")
-    kgram_index = KGramIndex(3, vocab)
-    t2 = time.time()
-    print(t2-t1)
-    print("Total time: {}".format(t2-t0))
-    return [pos_inv_index, kgram_index]
->>>>>>> a15a16df9a8745bce6ad1b07a7c77ae1a9a5f4ae
 
 
 def print_index(index):
@@ -129,7 +108,6 @@ if __name__ == "__main__":
     # literals = queryprocessing.process_query('nano')
 
     # MUST RETURN [7]
-<<<<<<< HEAD
     # literals = queryprocessing.process_query(':stem conspicuous')
     # print(literals)
     # if literals:
@@ -140,11 +118,3 @@ if __name__ == "__main__":
     literals = queryprocessing.process_query('\"annual fun run\" friends')
     search_results = queryprocessing.query_search(literals, index)
     print(search_results)
-=======
-    literals = queryprocessing.process_query(':stem conspicuous')
-    print(literals)
-    if literals:
-        search_results = queryprocessing.query_search(literals, index)
-        print(search_results)
-    # print(search_results)
->>>>>>> a15a16df9a8745bce6ad1b07a7c77ae1a9a5f4ae
