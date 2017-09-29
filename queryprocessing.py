@@ -8,7 +8,7 @@ from kgram import KGramIndex
 
 import time
 
-def process_query(query):
+def process_query(query, kgram_index):
     if query.startswith(':'):
         special_queries(query[1:])
     else:
@@ -24,7 +24,7 @@ def query_search(literals, index):
 
     for literal in literals:
         queries = shlex.split(literal)
-        
+
         docs_with_all_queries = []
 
         for subliterals in queries:
@@ -40,7 +40,7 @@ def query_search(literals, index):
 
             # SORT LISTS BY DOCUMENT ID
             combined_postings_lists = sorted(combined_postings_lists, key=lambda t:t[0])
-            
+
 
             docs_with_current_query = []
             found_count = 0

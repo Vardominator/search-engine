@@ -2,8 +2,7 @@ import os
 import collections
 import shlex
 import json
-import time
-
+from time import time
 import normalize
 import queryprocessing
 from kgram import KGramIndex
@@ -24,15 +23,16 @@ def create_index(processed_docs):
     pos_inv_index = {}
     vocab = set()
 
-    t0 = time.time()
+    t0 = time()
     # WALK THROUGH DOCUMENTS AND CREATE POSITIONAL INVERTED INDEX
     for i in range(len(processed_docs)):
         terms = processed_docs[i].split()
         curr_term_position = 0
         for word in terms:
-            
+            word = normalize.remove_special_characters(word)
+            vocab.add(word)
             term_list = normalize.normalize(word)
-            
+
 
             for term in term_list:
 
@@ -54,7 +54,10 @@ def create_index(processed_docs):
 
     # SORT DICTIONARY BY KEYS
     pos_inv_index = collections.OrderedDict(sorted(pos_inv_index.items(), key=lambda t:t[0]))
-    return pos_inv_index
+    kgram_index = KGramIndex(3, vocab)
+    t1 = time()
+    print("Time to build indexes: {}".format(t1-t0))
+    return [pos_inv_index, kgram_index]
 
 
 def print_index(index):
