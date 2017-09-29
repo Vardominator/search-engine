@@ -28,9 +28,8 @@
 * There should be styled like and share buttons
 
 ### Features to add to GUI
-* Most recent query
-* loading modal
-* Number of documents returned
-* Scroll box for returned files
-* Document titles
-* Click title to show body
+* Print Terms button next to Build Index. List terms in left scroll box
+* Check if term not in index and return term not found (print in modal)
+* Print stem of word below query search bar
+* Change Last Query/Documents found table to a horizontal table
+* If time permits, seach term and return definition on right scroll box
