@@ -6,13 +6,9 @@ from operator import itemgetter
 import normalize
 from kgram import KGramIndex
 
-<<<<<<< HEAD
 import time
 
 def process_query(query):
-=======
-def process_query(query, kgram_index = None):
->>>>>>> a15a16df9a8745bce6ad1b07a7c77ae1a9a5f4ae
     if query.startswith(':'):
         special_queries(query[1:])
     else:
@@ -44,10 +40,7 @@ def query_search(literals, index):
 
             # SORT LISTS BY DOCUMENT ID
             combined_postings_lists = sorted(combined_postings_lists, key=lambda t:t[0])
-<<<<<<< HEAD
             
-=======
->>>>>>> a15a16df9a8745bce6ad1b07a7c77ae1a9a5f4ae
 
             docs_with_current_query = []
             found_count = 0
