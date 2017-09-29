@@ -247,6 +247,8 @@ ModelManifest.xml
 
 *article*
 *all-nps-sites*
+data/documents
+data/testdocuments
 
 # Compiled python
 *.pyc
