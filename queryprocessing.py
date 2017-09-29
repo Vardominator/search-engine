@@ -61,12 +61,23 @@ def query_search(literals, index):
                             j = 0
 
                             # if len(left_list) != 1 and len(right_list) != 1:
-                            while i < len(left_list) - 1 and j < len(right_list) - 1:
-                                if left_list[i] < right_list[j] and left_list[i] + 1 != right_list[j]:
+                            if len(left_list) != 1 and len(right_list) != 1:
+                                while i < len(left_list) - 1 and j < len(right_list) - 1:
+                                    if left_list[i] < right_list[j] and left_list[i] + 1 != right_list[j]:
+                                        i += 1
+                                    elif left_list[i] + 1 == right_list[j]:
+                                        break
+                                    else:
+                                        j += 1
+                            elif len(right_list) == 1:
+                                for k in range(len(left_list) - 1):
+                                    if left_list[k] + 1 == right_list[0]:
+                                        break
                                     i += 1
-                                elif left_list[i] + 1 == right_list[j]:
-                                    break
-                                else:
+                            elif len(left_list) == 1:
+                                for k in range(len(right_list) - 1):
+                                    if left_list[0] + 1 == right_list[k]:
+                                        break
                                     j += 1
 
                             if left_list[i] + 1 != right_list[j]:

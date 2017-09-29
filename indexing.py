@@ -87,7 +87,7 @@ if __name__ == "__main__":
                 #                         'url': content['url']}
 
 
-    index = create_index(docs)
+    indexes = create_index(docs)
 
     # print(index['annual'])
     # TEST QUERY PROCESSOR
@@ -118,6 +118,6 @@ if __name__ == "__main__":
     #     print(search_results)
     # print(search_results)
 
-    literals = queryprocessing.process_query('\"The map at left shows the tracts in relation to each other\" + \"acquisition of florida power\" everglades + \"read a variety of stories that tell about soldiers\" + \"nps central\"')
-    search_results = queryprocessing.query_search(literals, index)
+    literals = queryprocessing.process_query('\"The map at left shows the tracts in relation to each other\" + \"acquisition of florida power\" everglades + \"read a variety of stories that tell about soldiers\" + \"nps central\"', indexes[1])
+    search_results = queryprocessing.query_search(literals, indexes[0])
     print(search_results)
