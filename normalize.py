@@ -1,9 +1,8 @@
 """Normalization module"""
 import re
 
-from porter2stemmer import Porter2Stemmer
+import stemming.porter2
 
-STEMMER = Porter2Stemmer()
 
 def normalize(word):
     """Main function to normalize words, removes any special characters
@@ -12,12 +11,11 @@ def normalize(word):
     word = remove_special_characters(word)
     word_set = dehyphenate(word)
     word_list = [stem(token) for token in word_set]
-    # print(word_list)
     return word_list
 
 
 def stem(word):
-    return STEMMER.stem(word.lower())
+    return stemming.porter2.stem(word.lower())
 
 
 def remove_special_characters(word):
@@ -41,5 +39,4 @@ def dehyphenate(word):
 def query_normalize(word):
     word = remove_special_characters(word)
     word = stem(word)
-    # print(word)
     return word

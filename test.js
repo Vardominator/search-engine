@@ -1,7 +1,5 @@
 $(document).ready(function(){
 
-    var documentBodies = {};
-
     // ENABLES 'Build Index' BUTTON IF CORPUS DIRECTORY IS INSERTED
     $('#dir_input').change(function(e){
         if($('#dir_input').val() != ''){
@@ -11,25 +9,25 @@ $(document).ready(function(){
         }
     });
     
+    // BUILD INDEX
     $("#buildindex_button").click(function(e){
-        
         $('#building_index_loader').show();
-
         var dir = $('#dir_input').val();
+
         $.ajax({
             type: "POST",
             url: "http://127.0.0.1:5000/buildindex",
             data : {corpus_dir: dir},
             success: populateTable
         });
+
         $('#dir_input').val("");
         $('#buildindex_button').addClass('disabled');
     });
 
+    // EXECUTE QUERY
     $("#query").change(function(e){
-
         $('#retrieve_documents_loader').show();
-
         var query_input = $('#query').val();
 
         $.ajax({
@@ -41,9 +39,13 @@ $(document).ready(function(){
 
         $("#last_query").text($("#query").val());
         $('#query').val("");
-
+        $('#selected_document_title').text("");
+        $('#selected_document_body').text("");
     });
 
+    var documentBodies = {};
+
+    // SHOW SELECTED RELEVANT DOCUMENT
     $(document).on("click", "#title_icon", function () {
         var selectedTitle = $(this).text();
         var selectedBody = documentBodies[selectedTitle];
@@ -51,6 +53,7 @@ $(document).ready(function(){
         $('#selected_document_body').text(selectedBody);
     });
 
+    // PRINT DOCUMENT AND TERM COUNT FROM INDEX
     function populateTable(response){
         var res = $.parseJSON(response);
         console.log(res);
@@ -59,15 +62,14 @@ $(document).ready(function(){
         $('#building_index_loader').hide()
     }
 
+    // BUILD THE LIST OF RELEVANT FILES
     function buildRelevantList(response){
         var res = $.parseJSON(response);
-
         $("#relevant_list").empty()
-        $.each(res.files, function(index, file){
 
+        $.each(res.files, function(index, file){
             title = res.contents[file]['title'];
             body = res.contents[file]['body'];
-
             documentBodies[title] = body;
 
             if(body.length > 75){
@@ -88,18 +90,12 @@ $(document).ready(function(){
         });
 
         $('#retrieve_documents_loader').hide();
-
         $("#documents_found").text(res.files.length);
-
     }
 
-    function showFullDocument(response){
-        console.log(response);
-    }
-
+    // USED FOR DEBUGGING
     function successCallBack(response){
         console.log(response);
     }
-
 
 });

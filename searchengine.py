@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, url_for,request
 from flask import make_response
 import json
 import os
+import time
 
 import indexing
 import queryprocessing

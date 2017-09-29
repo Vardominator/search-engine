@@ -2,6 +2,7 @@ import os
 import collections
 import shlex
 import json
+import time
 
 import normalize
 
@@ -24,22 +25,24 @@ def create_index(processed_docs):
 
     # WALK THROUGH DOCUMENTS AND CREATE POSITIONAL INVERTED INDEX
     for i in range(len(processed_docs)):
-        # print(processed_docs[i])
         terms = processed_docs[i].split()
         curr_term_position = 0
         for word in terms:
+            
             term_list = normalize.normalize(word)
+            
+
             for term in term_list:
+
                 if term not in pos_inv_index:
                     pos_inv_index[term] = []
-        
-                posting_found = False
+
                 if len(pos_inv_index[term]) == 0:
                     pos_inv_index[term].append(PositionalPosting(i, [curr_term_position]))
                 else:
                     # CHECK IF EXISTS AT THE END OF THE LIST
                     last_posting = pos_inv_index[term][-1]
-                    
+
                     if last_posting.postings_list[0] == i:
                         last_posting.add_position(curr_term_position)
                     else:
@@ -48,8 +51,7 @@ def create_index(processed_docs):
             curr_term_position += 1
 
     # SORT DICTIONARY BY KEYS
-    pos_inv_index = collections.OrderedDict(sorted(pos_inv_index.items(), key=lambda t:t[0])) 
-
+    pos_inv_index = collections.OrderedDict(sorted(pos_inv_index.items(), key=lambda t:t[0]))
     return pos_inv_index
 
 
@@ -61,19 +63,28 @@ def print_index(index):
             print(posting.postings_list)
 
 if __name__ == "__main__":
-    corpus_dir = 'data/documents'
-    test_docs_dir = 'data/testdocuments'
-    sample_docs = []
+    docs_dir = 'data/documents'
+    test_docs_dir = 'data/documents'
+    docs = []
 
-    for root,dirs,files in os.walk(test_docs_dir):
-        files = sorted(files)
+    id = 0
+
+    for root,dirs,files in os.walk(docs_dir):
+        files = sorted(files, key=lambda x: int(os.path.splitext(x)[0]))
         for file in files:
-            with open(os.path.join(test_docs_dir, file), 'r') as f:
-                sample_docs.append(f.read())
+            # doc_id_files[id] = file
+            id += 1
+            with open(os.path.join(docs_dir, file), 'r') as json_data:
+                content = json.load(json_data)
+                docs.append(content['body'])
+                # file_contents[file] = {'body': content['body'],
+                #                         'title': content['title'],
+                #                         'url': content['url']}
 
-    index = create_index(sample_docs)
-    # print_index(index.keys()))
 
+    index = create_index(docs)
+
+    # print(index['annual'])
     # TEST QUERY PROCESSOR
 
     # MUST RETURN [2,4,6]
@@ -84,7 +95,7 @@ if __name__ == "__main__":
 
     # MUST RETURN [4]
     # literals = queryprocessing.process_query('crazy awesome')
-    
+
     # MUST RETURN [0,1,5,6]
     # literals = queryprocessing.process_query('\"dumb fuck\"')
 
@@ -95,9 +106,13 @@ if __name__ == "__main__":
     # literals = queryprocessing.process_query('nano')
 
     # MUST RETURN [7]
-    literals = queryprocessing.process_query(':stem conspicuous')
-    print(literals)
-    if literals:
-        search_results = queryprocessing.query_search(literals, index)
-        print(search_results)
+    # literals = queryprocessing.process_query(':stem conspicuous')
+    # print(literals)
+    # if literals:
+    #     search_results = queryprocessing.query_search(literals, index)
+    #     print(search_results)
     # print(search_results)
+
+    literals = queryprocessing.process_query('\"annual fun run\" friends')
+    search_results = queryprocessing.query_search(literals, index)
+    print(search_results)
