@@ -9,7 +9,8 @@ import queryprocessing
 
 app = Flask(__name__)
 
-index = None
+pos_index = None
+kgram_index = None
 doc_id_files = {}
 
 @app.route('/test', methods=['GET', 'POST'])
@@ -26,7 +27,7 @@ def buildindex():
         id = 0
         for root,dirs,files in os.walk(docs_dir):
             files = sorted(files)
-            
+
             for file in files:
                 doc_id_files[id] = file
                 id += 1
@@ -37,18 +38,21 @@ def buildindex():
                                            'title': content['title'],
                                            'url': content['url']}
 
-        index = indexing.create_index(docs)
+        indexes = indexing.create_index(docs)
+        pos_index = indexes[0]
+        kgram_index = indexes[1]
 
         # STORE IN CONTEXT
-        app.config['index'] = index
+        app.config['pos_index'] = pos_index
+        app.config['kgram_index'] = kgram_index
         app.config['doc_id_files'] = doc_id_files
         app.config['file_contents'] = file_contents
 
         return json.dumps({
                             'files': files,
                             'doc_count': len(files),
-                            'terms': list(index.keys()),
-                            'term_count': len(index)
+                            'terms': list(pos_index.keys()),
+                            'term_count': len(pos_index)
                           })
 
 
@@ -56,18 +60,19 @@ def buildindex():
 def query():
     if request.method == 'POST':
 
-        index = app.config['index']
+        pos_index = app.config['pos_index']
+        kgram_index = app.config['kgram_index']
         doc_id_files = app.config['doc_id_files']
         file_contents = app.config['file_contents']
 
         query = request.form['query']
-        
-        literals = queryprocessing.process_query(query)
-        search_results = queryprocessing.query_search(literals, index)
-        
+
+        literals = queryprocessing.process_query(query, kgram_index)
+        search_results = queryprocessing.query_search(literals, pos_index)
+
         relevant_files = []
         relevant_contents = {}
-        
+
         for doc_id in search_results:
             file = doc_id_files[doc_id]
             relevant_files.append(file)
