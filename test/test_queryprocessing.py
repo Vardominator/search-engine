@@ -45,9 +45,9 @@ def test_phrase_query():
 
 def test_and_query():
     """Checks to make sure right results returned on an AND query"""
-    phrase_query = 'is test'
+    and_query = 'is test'
     ans = [0, 1]
-    literals = queryprocessing.process_query(phrase_query, None)
+    literals = queryprocessing.process_query(and_query, None)
     assert ans == queryprocessing.query_search(literals, pos_index)
 
 def test_or_query():
