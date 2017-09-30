@@ -4,28 +4,28 @@ from indexing import PositionalPosting
 import collections
 
 sample_index = {
-              "test":[PositionalPosting(0,[3]),
-                      PositionalPosting(1,[1]),
-                      PositionalPosting(3,[0, 1, 2, 3, 4]),
-                      PositionalPosting(4,[1])],
-              "document":[PositionalPosting(0,[4]),
-                          PositionalPosting(1,[2]),
-                          PositionalPosting(4,[0])],
-              "here":[PositionalPosting(1,[4]),
-                      PositionalPosting(2,[0]),
-                      PositionalPosting(4,[3])],
-              "we":[PositionalPosting(2,[1])],
-              "go":[PositionalPosting(2,[2])],
-              "goe":[PositionalPosting(4,[2])],
-              "anoth":[PositionalPosting(1,[0])],
-              "third":[PositionalPosting(2,[4])],
-              "this":[PositionalPosting(0,[0])],
-              "is":[PositionalPosting(0,[1]),
-                      PositionalPosting(1,[3])],
-              "a":[PositionalPosting(0,[2]),
-                      PositionalPosting(2,[3])],
-              "one":[PositionalPosting(2,[5])]
-             }
+                "test":[PositionalPosting(0,[3]),
+                        PositionalPosting(1,[1]),
+                        PositionalPosting(3,[0, 1, 2, 3, 4]),
+                        PositionalPosting(4,[1])],
+                "document":[PositionalPosting(0,[4]),
+                            PositionalPosting(1,[2]),
+                            PositionalPosting(4,[0])],
+                "here":[PositionalPosting(1,[4]),
+                        PositionalPosting(2,[0]),
+                        PositionalPosting(4,[3])],
+                "we":[PositionalPosting(2,[1])],
+                "go":[PositionalPosting(2,[2])],
+                "goe":[PositionalPosting(4,[2])],
+                "anoth":[PositionalPosting(1,[0])],
+                "third":[PositionalPosting(2,[4])],
+                "this":[PositionalPosting(0,[0])],
+                "is":[PositionalPosting(0,[1]),
+                        PositionalPosting(1,[3])],
+                "a":[PositionalPosting(0,[2]),
+                        PositionalPosting(2,[3])],
+                "one":[PositionalPosting(2,[5])]
+               }
 pos_index = collections.OrderedDict(sorted(sample_index.items(), key=lambda t:t[0]))
 
 def test_standard_query():
