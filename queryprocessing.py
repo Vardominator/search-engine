@@ -97,6 +97,8 @@ def query_search(literals, index):
 
 
 def wildcard_query(query, kgram_index):
+    """Puts queries in correct form for the kgram index, splits on grams
+       and returns the strings that contain each gram"""
     if not query.startswith('*'):
         query = '$' + query
     if not query.endswith('*'):

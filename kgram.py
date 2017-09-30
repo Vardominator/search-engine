@@ -2,7 +2,12 @@ from itertools import chain
 from collections import defaultdict
 
 class KGramIndex(object):
-    """Pydoc inc, going to work on this a lot more but base functionality is here"""
+    """KGram Index that builds dictionaries of grams up to the designated
+       number of grams. Each word added to the index is broken into grams
+       from 1 to num_grams, and is added to the list for each gram. The
+       index includes functions to retrieve words containing each of a
+       list of grams."""
+
     def __init__(self, num_grams, vocab = None):
         self.num_grams = num_grams
         self.index = defaultdict(list)

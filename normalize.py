@@ -36,7 +36,8 @@ def dehyphenate(word):
         return set(word_list)
 
 def query_normalize(word):
+    """Removes special characters and stems words without dehyphenating,
+       which is necessary for queries"""
     word = remove_special_characters(word)
     word = stem(word)
-    # print(word)
     return word
