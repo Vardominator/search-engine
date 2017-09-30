@@ -1,26 +1,32 @@
 """Unit Tests for queries"""
-import os
-import json
 import queryprocessing
-import indexing
+from indexing import PositionalPosting
+import collections
 
-def process_documents():
-    """Helper function to pre-process documents"""
-    docs = []
-    docs_dir = 'test/test_docs'
-
-    for root,dirs,files in os.walk(docs_dir):
-        files = sorted(files)
-
-        for file in files:
-            with open(os.path.join(docs_dir, file), 'r') as json_data:
-                content = json.load(json_data)
-                docs.append(content['body'])
-    return docs
-
-docs = process_documents() 
-
-pos_index = indexing.create_index(docs)[0]
+sample_index = {
+              "test":[PositionalPosting(0,[3]),
+                      PositionalPosting(1,[1]),
+                      PositionalPosting(3,[0, 1, 2, 3, 4]),
+                      PositionalPosting(4,[1])],
+              "document":[PositionalPosting(0,[4]),
+                          PositionalPosting(1,[2]),
+                          PositionalPosting(4,[0])],
+              "here":[PositionalPosting(1,[4]),
+                      PositionalPosting(2,[0]),
+                      PositionalPosting(4,[3])],
+              "we":[PositionalPosting(2,[1])],
+              "go":[PositionalPosting(2,[2])],
+              "goe":[PositionalPosting(4,[2])],
+              "anoth":[PositionalPosting(1,[0])],
+              "third":[PositionalPosting(2,[4])],
+              "this":[PositionalPosting(0,[0])],
+              "is":[PositionalPosting(0,[1]),
+                      PositionalPosting(1,[3])],
+              "a":[PositionalPosting(0,[2]),
+                      PositionalPosting(2,[3])],
+              "one":[PositionalPosting(2,[5])]
+             }
+pos_index = collections.OrderedDict(sorted(sample_index.items(), key=lambda t:t[0]))
 
 def test_standard_query():
     query = 'test'
@@ -30,18 +36,21 @@ def test_standard_query():
 
 def test_phrase_query():
     phrase_query = '\"third one\"'
+    ans = [2]
     literals = queryprocessing.process_query(phrase_query, None)
-    queryprocessing.query_search(literals, pos_index)
+    assert ans == queryprocessing.query_search(literals, pos_index)
 
 def test_and_queries():
     and_query = 'test + document'
+    ans = [0, 1, 3, 4]
     literals = queryprocessing.process_query(and_query, None)
-    queryprocessing.query_search(literals, pos_index)
+    assert ans == queryprocessing.query_search(literals, pos_index)
 
 def test_complex_query():
     phrase_and_query = '\"test document\"+this'
+    ans = [0, 1]
     literals = queryprocessing.process_query(phrase_and_query, None)
-    queryprocessing.query_search(literals, pos_index)
+    assert ans == queryprocessing.query_search(literals, pos_index)
 
 # Testing wildcard queries
 from kgram import KGramIndex
