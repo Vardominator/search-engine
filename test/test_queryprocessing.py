@@ -43,11 +43,18 @@ def test_phrase_query():
     literals = queryprocessing.process_query(phrase_query, None)
     assert ans == queryprocessing.query_search(literals, pos_index)
 
-def test_and_queries():
+def test_and_query():
     """Checks to make sure right results returned on an AND query"""
-    and_query = 'test + document'
+    phrase_query = 'is test'
+    ans = [0, 1]
+    literals = queryprocessing.process_query(phrase_query, None)
+    assert ans == queryprocessing.query_search(literals, pos_index)
+
+def test_or_query():
+    """Checks to make sure right results returned on an OR query"""
+    or_query = 'test + document'
     ans = [0, 1, 3, 4]
-    literals = queryprocessing.process_query(and_query, None)
+    literals = queryprocessing.process_query(or_query, None)
     assert ans == queryprocessing.query_search(literals, pos_index)
 
 def test_complex_query():
@@ -64,8 +71,8 @@ k_index.add_to_index(['test', 'best', 'tempest'])
 
 def test_wildcard_handles_star_after():
     """Tests queries ending in wildcards"""
-    answer = {'test'}
-    assert answer == queryprocessing.wildcard_query('tes*', k_index)
+    answer = {'test', 'tempest'}
+    assert answer == queryprocessing.wildcard_query('te*', k_index)
 
 def test_handles_splitting_long_grams():
     """Tests wildcard queries with grams larger than index"""
@@ -91,3 +98,9 @@ def test_wildcard_multiple_stars():
     """Tests queries with multiple wildcards"""
     answer = {'tempest'}
     assert answer == queryprocessing.wildcard_query('te*pe*t', k_index)
+
+def test_query_processing_identifies_wildcards():
+    """Tests that * queries are passed to wildcard_query function"""
+    query = "tes*"
+    assert (queryprocessing.process_query(query, k_index) == 
+            queryprocessing.wildcard_query(query, k_index))
