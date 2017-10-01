@@ -22,6 +22,10 @@ def query_search(literals, index):
     for literal in literals:
         queries = shlex.split(literal)
 
+        all_terms = literal.replace('"', '').split()
+        if not all(term in index for term in all_terms):
+            continue       
+
         docs_with_all_queries = []
 
         for subliterals in queries:

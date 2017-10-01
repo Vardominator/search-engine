@@ -6,12 +6,13 @@
 <head>
     <meta charset="utf-8">
     <title>Semantic UI Sandbox</title>
-    <link rel="stylesheet" type="text/css" href="semantic/out/semantic.min.css">
     <script
       src="https://code.jquery.com/jquery-3.1.1.min.js"
       integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-      crossorigin="anonymous"></script>
-    <script src="semantic/out/semantic.min.js"></script>    
+      crossorigin="anonymous">
+    </script>
+    <link rel="stylesheet" type="text/css" href="semantic/out/semantic.min.css">
+    <script src="semantic/out/semantic.min.js"></script>
 </head>
 
 
@@ -33,9 +34,15 @@
         </div>
       </div>
 
-      <div class="eight wide column">
+      <div class="four wide column">
         <button id="buildindex_button" class="ui disabled primary fluid button">
           Build Index
+        </button>
+      </div>
+
+      <div class="four wide column">
+        <button id="showterms_button" class="ui disabled secondary fluid button">
+          Show Terms
         </button>
       </div>
 
@@ -108,34 +115,33 @@
 
 
 
-    <table class="ui definition table">
+    <table class="ui celled padded table">
+        <thead>
+          <tr>
+            <th class="single line center aligned">Last query</th>
+            <th class="single line center aligned">Documents found</th>
+          </tr>
         <tbody>
+        </thead>
           <tr>
-            <td >Last query</td>
-            <td id="last_query"></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            
+            <td>
+              <p id="last_query">
+                
+              </p>
+            </td>
+            <td>
+              <p id="documents_found">
+                
+              </p>
+            </td>
           </tr>
-          <tr>
-            <td>Documents found</td>
-            <td id="documents_found"></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            
-          </tr>
-      </tbody></table>
+        </tbody>
+      </table>
 
 
   </div>
 
-    <script src="test.js"></script>
+    <script src="index.js"></script>
 </body>
 
 

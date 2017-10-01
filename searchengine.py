@@ -6,6 +6,8 @@ import time
 
 import indexing
 import queryprocessing
+import normalize
+from collections import defaultdict
 
 app = Flask(__name__)
 
@@ -47,6 +49,7 @@ def buildindex():
         app.config['kgram_index'] = kgram_index
         app.config['doc_id_files'] = doc_id_files
         app.config['file_contents'] = file_contents
+        app.config['vocab'] = indexing.VOCAB
 
         return json.dumps({
                             'files': files,
@@ -54,6 +57,19 @@ def buildindex():
                             'terms': list(pos_index.keys()),
                             'term_count': len(pos_index)
                           })
+
+
+@app.route('/showterms', methods=['GET', 'POST'])
+def showterms():
+    if request.method == 'POST':
+        vocab = app.config['vocab']
+        alphabet = defaultdict(list)
+        for term in vocab:
+            if term != "":
+                alphabet[term[0]].append(term)
+        return json.dumps({
+                            'vocab': alphabet
+                         })
 
 
 @app.route('/query', methods=['GET', 'POST'])
@@ -83,6 +99,18 @@ def query():
                             'files': relevant_files,
                             'contents': relevant_contents
                           })
+
+
+@app.route('/stem', methods=['GET', 'POST'])
+def stem():
+    if request.method == 'POST':
+        stemmed_term = normalize.stem(request.form['term'])
+        print(stemmed_term)
+        return json.dumps({
+                            'term': request.form['term'],
+                            'stemmed_term': stemmed_term
+                          })
+
 
 if __name__ == "__main__":
     app.run(debug = True)
