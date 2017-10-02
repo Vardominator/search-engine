@@ -64,6 +64,20 @@ def test_complex_query():
     literals = queryprocessing.process_query(phrase_and_query, None)
     assert ans == queryprocessing.query_search(literals, pos_index)
 
+def test_query_normalizes():
+    """Checks to make sure queries are normalized to match index"""
+    normal_query = "goes"
+    ans = [4]
+    literals = queryprocessing.process_query(normal_query, None)
+    assert ans == queryprocessing.query_search(literals, pos_index)
+
+def test_query_not_in_index():
+    """Checks to make sure queries with no results are handled properly"""
+    not_in_index_query = "SPELLDRONG"
+    ans = []
+    literals = queryprocessing.process_query(not_in_index_query, None)
+    assert ans == queryprocessing.query_search(literals, pos_index)
+
 # Testing wildcard queries
 from kgram import KGramIndex
 k_index = KGramIndex(3)
