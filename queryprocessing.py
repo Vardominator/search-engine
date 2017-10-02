@@ -23,6 +23,7 @@ def query_search(literals, index):
         queries = shlex.split(literal)
 
         all_terms = literal.replace('"', '').split()
+        all_terms = [normalize.query_normalize(term) for term in all_terms]
         if not all(term in index for term in all_terms):
             continue       
 
