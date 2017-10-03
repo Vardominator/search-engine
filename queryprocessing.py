@@ -1,14 +1,13 @@
 import shlex
 import sys
+import time
 from itertools import chain, groupby
 from operator import itemgetter
-
 import normalize
 from kgram import KGramIndex
 
-import time
-
 def process_query(query, kgram_index):
+    """Isolate query literals"""
     if '*' in query:
         literals = wildcard_query(query, kgram_index)
     else:
@@ -17,42 +16,40 @@ def process_query(query, kgram_index):
     return literals
 
 def query_search(literals, index):
+    """Searches index for literals in query. Merges results of each literal."""
     succes_doc_ids = []
 
     for literal in literals:
-        queries = shlex.split(literal)
-
+        # SKILL LITERAL IF ALL TERMS DO NOT EXIST IN THE INDEX
         all_terms = literal.replace('"', '').split()
         all_terms = [normalize.query_normalize(term) for term in all_terms]
         if not all(term in index for term in all_terms):
             continue       
 
+        queries = shlex.split(literal)
         docs_with_all_queries = []
 
         for subliterals in queries:
             # SPLIT IF PHRASE CONTAINS MULTIPLE WORDS
             subliterals = subliterals.split()
-
+            # NORMALIZE TERMS IN PHRASE
             subliterals = [normalize.query_normalize(term) for term in subliterals]
-            # print(subliterals)
+            
             # COMBINE POSITIONAL POSTING OBJECTS FOR A LITERAL
             combined_postings = list(chain.from_iterable([index[subliteral] for subliteral in subliterals]))
             # EXTRACT POSTINGS LISTS FOR EVERY POSITIONAL POSTING OBJECT
             combined_postings_lists = [posting.postings_list for posting in combined_postings]
-
             # SORT LISTS BY DOCUMENT ID
             combined_postings_lists = sorted(combined_postings_lists, key=lambda t:t[0])
 
             docs_with_current_query = []
-            found_count = 0
-            # SPLIT POSTINGS BY DOCUMENT ID
 
+            # SPLIT POSTINGS BY DOCUMENT ID
             for key,doc_postings in groupby(combined_postings_lists, itemgetter(0)):
                 doc_postings = list(doc_postings)
 
                 if len(subliterals) > 1:
                     # CHECK IF LENGTH OF POSTINGS IS THE SAME AS THE SUBLITERALS
-                    # print(doc_postings)
                     if len(doc_postings) == len(subliterals):
                         subliteral_found = True
 
@@ -62,7 +59,6 @@ def query_search(literals, index):
                             i = 0
                             j = 0
 
-                            # if len(left_list) != 1 and len(right_list) != 1:
                             if len(left_list) != 1 and len(right_list) != 1:
                                 while i < len(left_list) - 1 and j < len(right_list) - 1:
                                     if left_list[i] < right_list[j] and left_list[i] + 1 != right_list[j]:
@@ -94,7 +90,7 @@ def query_search(literals, index):
 
             docs_with_all_queries.append(docs_with_current_query)
 
-        # UNIONIZE DOC IDs WITH SUCCESSFUL QUERIES
+        # INTERSECT DOC IDs WITH SUCCESSFUL QUERIES
         ids_intersect = list(set.intersection(*map(set, docs_with_all_queries)))
         succes_doc_ids.extend(ids_intersect)
 

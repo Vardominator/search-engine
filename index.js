@@ -166,6 +166,7 @@ $(document).ready(function(){
         $("#term_accordion").accordion("refresh");
     });
 
+    // PRINT STEM OF TERM IN DOCUMENT BODY BOXY
     function printTermStem(response){
         var res = $.parseJSON(response)
         $('#selected_document_body').text(

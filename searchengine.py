@@ -3,7 +3,6 @@ from flask import make_response
 import json
 import os
 import time
-
 import indexing
 import queryprocessing
 import normalize
@@ -17,10 +16,12 @@ doc_id_files = {}
 
 @app.route('/test', methods=['GET', 'POST'])
 def home():
+    """Used to test API."""
     return json.dumps({'response': "hello"})
 
 @app.route('/buildindex', methods=['GET', 'POST'])
 def buildindex():
+    """Parse files of given directory, build index, and return."""
     if request.method == 'POST':
         docs = []
         file_contents = {}
@@ -58,9 +59,9 @@ def buildindex():
                             'term_count': len(pos_index)
                           })
 
-
 @app.route('/showterms', methods=['GET', 'POST'])
 def showterms():
+    """Return terms of the index."""
     if request.method == 'POST':
         vocab = app.config['vocab']
         alphabet = defaultdict(list)
@@ -71,9 +72,9 @@ def showterms():
                             'vocab': alphabet
                          })
 
-
 @app.route('/query', methods=['GET', 'POST'])
 def query():
+    """Process user query and return relevant documents."""
     if request.method == 'POST':
 
         pos_index = app.config['pos_index']
@@ -103,6 +104,7 @@ def query():
 
 @app.route('/stem', methods=['GET', 'POST'])
 def stem():
+    """Return the stem of the word."""
     if request.method == 'POST':
         stemmed_term = normalize.stem(request.form['term'])
         print(stemmed_term)
@@ -111,6 +113,5 @@ def stem():
                             'stemmed_term': stemmed_term
                           })
 
-
 if __name__ == "__main__":
-    app.run(debug = True)
+    app.run(debug = False)
