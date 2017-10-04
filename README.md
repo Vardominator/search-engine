@@ -1,15 +1,26 @@
-# search-engine
+# Vardo's & Nick's Bada$$ Search Engine
 
-# GUI
-## Installing Semantic UI Dependencies
-### Install latest version of node.js
+## Python Set Up
+### Install Python 3.5+
+* Run the following:
+  * sudo apt-get update
+  * sudo apt-get install python3
+
+### Install Necessary Packages
+* Navigate to repository directory
+* Run the following:
+  * pip install -r requirements.txt
+
+## GUI Set Up
+### Install Semantic UI Dependencies
+#### Install latest version of node.js
 * Run the following:
   * sudo apt-get update
   * sudo apt-get install nodejs
   * sudo apt-get install npm
 
-### Install latest version of Semantic UI
-* Go to repository directory
+#### Install latest version of Semantic UI
+* Navigate to repository directory
 * Run the following:
   * npm install semantic-ui --save
 
@@ -21,15 +32,11 @@
 * Run the following:
   * gulp build
 
-### Install a CORS plugin for your browser to enable local Http requests
-* Simply search 'cors' for you browser plugin and install the most popular one
+#### Install a CORS plugin for your browser to enable local Http requests
+* Search 'cors' plugin for you browser and install the most popular one
 
-### Test by opening semantictest.html
-* There should be styled like and share buttons
-
-### Features to add to GUI
-* Print Terms button next to Build Index. List terms in left scroll box
-* Check if term not in index and return term not found (print in modal)
-* Print stem of word below query search bar
-* Change Last Query/Documents found table to a horizontal table
-* If time permits, seach term and return definition on right scroll box
+## Usage
+* Run the following:
+  * python3 searchengine.py
+* Open index.html with favorite browser
+* Enjoy a nice glass of rye
