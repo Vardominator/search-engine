@@ -44,7 +44,7 @@
 ## TODOs
 ### Nick
 * Fix Kgram: AND queries
-* More phrase query unit test
+* More phrase query unit tests
 * Milestone 2:
   * Ranked retrievals
   * Spelling correction
