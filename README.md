@@ -40,3 +40,24 @@
   * python3 searchengine.py
 * Open index.html with favorite browser
 * Enjoy a nice glass of rye
+
+## TODOs
+### Nick
+* Fix Kgram: AND queries
+* More phrase query unit test
+* Milestone 2:
+  * Ranked retrievals
+  * Spelling correction
+  * Kgram on disk
+  * Calculate document weights
+### Vardo
+* Fix phrase queries
+* Toggle modes (index and query) in GUI
+* Milestone 2:
+  * Build the index
+  * Querying the index
+  * B+ tree for vocabulary
+  * Write index to disk
+### Both
+* Print ranked retrieval results
+* Enjoy a nice glass of rye
