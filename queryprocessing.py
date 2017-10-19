@@ -1,6 +1,9 @@
 import shlex
 import sys
 import time
+import math
+import heapq
+from collections import defaultdict
 from itertools import chain, groupby
 from operator import itemgetter
 import normalize
@@ -107,3 +110,19 @@ def wildcard_query(query, kgram_index):
     gram_list = query.split('*')
     gram_list = set(filter(None, gram_list))
     return kgram_index.get_intersection_grams(gram_list)
+
+
+def ranked_query(query, k, index):
+    """Returns the k most relevant documents from the corpus for a query,
+       using the "term at a time" algorithm"""
+    A = defaultdict(int)
+    heap = []
+    query = [query_normalize(word) for word in query.split()]
+    for term in query:
+        wqt = math.log(1 + len(index)/len(index[term]))
+        for posting in index[term]:
+            wdt = 1 + math.log(len(postings[1]))
+            A[postings[0]] += wdt * wqt
+    for doc, score in A.items():
+        heapq.heappush(heap, (-score, doc))
+    return [key for value, key in heapq.nsmallest(k, heap)]

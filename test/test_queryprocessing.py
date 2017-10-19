@@ -43,6 +43,13 @@ def test_phrase_query():
     literals = queryprocessing.process_query(phrase_query, None)
     assert ans == queryprocessing.query_search(literals, pos_index)
 
+def test_long_phrase_query():
+    """Checks to make sure right results returned on phrase query"""
+    phrase_query = '\"test document is here\"'
+    ans = [1]
+    literals = queryprocessing.process_query(phrase_query, None)
+    assert ans == queryprocessing.query_search(literals, pos_index)
+
 def test_and_query():
     """Checks to make sure right results returned on an AND query"""
     and_query = 'is test'
