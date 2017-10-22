@@ -51,7 +51,7 @@
   * Kgram on disk
   * Calculate document weights
 ### Vardo
-* Fix phrase queries
+* Fix phrase queries (DONE)
 * Toggle modes (index and query) in GUI
 * Milestone 2:
   * Build the index
