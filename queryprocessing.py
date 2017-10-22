@@ -37,7 +37,7 @@ def query_search(literals, index):
             subliterals = subliterals.split()
             # NORMALIZE TERMS IN PHRASE
             subliterals = [normalize.query_normalize(term) for term in subliterals]
-            
+
             # COMBINE POSITIONAL POSTING OBJECTS FOR A LITERAL
             combined_postings = list(chain.from_iterable([index[subliteral] for subliteral in subliterals]))
             # EXTRACT POSTINGS LISTS FOR EVERY POSITIONAL POSTING OBJECT
@@ -55,37 +55,13 @@ def query_search(literals, index):
                     # CHECK IF LENGTH OF POSTINGS IS THE SAME AS THE SUBLITERALS
                     if len(doc_postings) == len(subliterals):
                         subliteral_found = True
+                        postings = [x[1] for x in doc_postings]
 
-                        for a in range(len(doc_postings) - 1):
-                            left_list = doc_postings[a][1]
-                            right_list = doc_postings[a + 1][1]
-                            i = 0
-                            j = 0
-
-                            if len(left_list) != 1 and len(right_list) != 1:
-                                while i < len(left_list) - 1 and j < len(right_list) - 1:
-                                    if left_list[i] < right_list[j] and left_list[i] + 1 != right_list[j]:
-                                        i += 1
-                                    elif left_list[i] + 1 == right_list[j]:
-                                        break
-                                    else:
-                                        j += 1
-                            elif len(right_list) == 1:
-                                for k in range(len(left_list) - 1):
-                                    if left_list[k] + 1 == right_list[0]:
-                                        break
-                                    i += 1
-                            elif len(left_list) == 1:
-                                for k in range(len(right_list) - 1):
-                                    if left_list[0] + 1 == right_list[k]:
-                                        break
-                                    j += 1
-
-                            if left_list[i] + 1 != right_list[j]:
-                                subliteral_found = False
-                                break
-
-                        if subliteral_found:
+                        for i in range(len(postings)):
+                            postings[i] = [posting - i for posting in postings[i]]
+                                                    
+                        results = set.intersection(*map(set, postings))
+                        if len(results) > 0:
                             docs_with_current_query.append(doc_postings[0][0])
 
                 else:
