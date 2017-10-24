@@ -52,3 +52,4 @@ def create_index(processed_docs):
     pos_inv_index = collections.OrderedDict(sorted(pos_inv_index.items(), key=lambda t:t[0]))
     kgram_index = KGramIndex(3, VOCAB)
     return [pos_inv_index, kgram_index]
+

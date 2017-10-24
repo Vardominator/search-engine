@@ -42,9 +42,9 @@ def buildindex():
                                            'title': content['title'],
                                            'url': content['url']}
 
-        indexes = indexing.create_index(docs)
-        # indexfile = open('indexes', 'rb')
-        # indexes = pickle.load(indexfile)
+        # indexes = indexing.create_index(docs)
+        indexfile = open('bin/indexes', 'rb')
+        indexes = pickle.load(indexfile)
         # pickle.dump(indexes, indexfile)
         pos_index = indexes[0]
         kgram_index = indexes[1]
