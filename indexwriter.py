@@ -60,18 +60,24 @@ class DiskPositionalIndex(object):
         vocab_index = 0
         for term in dictionary:
             postings = index[term]
-            # write vocab entry for term: byte location of the term in the vocab list and
-            # the byte location of the postings for the term in the postings file
+            # vocab position
             vocab_table_file.write((vocab_positions[vocab_index]).to_bytes(8, byteorder='big'))
+            # position in postings file (8 bytes)
             vocab_table_file.write((postings_file.tell()).to_bytes(8, byteorder='big'))
-            # write the postings file for term: document frequency for term then the doc ids, encoded as gaps
+            # number of documents (dft - 4 bytes)
             postings_file.write((len(postings)).to_bytes(4, byteorder='big'))
 
             last_docid = 0
             for posting in postings:
                 postings_list = posting.postings_list
+                # doc id as gap (d - 4 bytes)
                 postings_file.write((postings_list[0] - last_docid).to_bytes(4, byteorder='big'))
                 last_docid = postings_list[0]
+                # term frequency (tf_t,d - 4 bytes)
+                postings_file.write((len(postings_list[1])).to_bytes(4, byteorder='big'))
+                # positions (p1, p2, p3... - 4 bytes)
+                for position in postings_list[1]:
+                    postings_file.write((position).to_bytes(4, byteorder='big'))
 
             vocab_index += 1
 
