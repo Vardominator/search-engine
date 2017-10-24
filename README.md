@@ -54,10 +54,9 @@
 * Fix phrase queries (DONE)
 * Toggle modes (index and query) in GUI
 * Milestone 2:
-  * Build the index
+  * Build the index on disk (DONE)
   * Querying the index
   * B+ tree for vocabulary
-  * Write index to disk
 ### Both
 * Print ranked retrieval results
 * Enjoy a nice glass of rye
