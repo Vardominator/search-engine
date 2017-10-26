@@ -1,5 +1,6 @@
 from itertools import chain
 from collections import defaultdict
+import heapq
 
 class KGramIndex(object):
     """KGram Index that builds dictionaries of grams up to the designated
@@ -56,11 +57,29 @@ class KGramIndex(object):
         max_len = self.num_grams
         return [gram[ind:ind+(max_len)] for ind in range(0, len(gram) - max_len + 1, 1)]
 
-    @staticmethod
-    def print_kgrams(kgram_number, word):
-        """Helper function to list kgrams for individual words"""
+    def get_kgrams(self, word):
+        """Gets grams from a word without adding to index"""
         gram_word = "$" + word + "$"
-        grams = set(zip(*[gram_word[i:] for i in range(kgram_number)]))
-        print('{}-Grams found in {}:'.format(kgram_number, word))
-        for gram in grams:
-            print(''.join(gram))
+        all_grams = set()
+        grams = map(set, [zip(*[gram_word[i:] for i in range(num_grams)]) for num_grams in range(1, self.num_grams+1)])
+        for gram_set in grams:
+            for gram in gram_set:
+                all_grams.add(''.join(gram))
+        return all_grams
+
+    def find_spelling_candidates(self, qword, num_candidates):
+        query_word_grams = self.get_kgrams(qword)
+        candidates = set()
+        ranked_candidates = []
+        for gram in query_word_grams:
+            candidates |= set(self.get_words(gram))
+        for word in candidates:
+            score = self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(word))
+            heapq.heappush(ranked_candidates, (-score, word))
+        return [(word, -score) for score, word in heapq.nsmallest(num_candidates, ranked_candidates)]
+
+
+    @staticmethod
+    def calculate_jacard_coeff(qword_grams, tword_grams):
+        n = len(qword_grams.intersection(tword_grams))
+        return n / float(len(qword_grams) + len(tword_grams) - n)
