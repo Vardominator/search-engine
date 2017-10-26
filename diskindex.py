@@ -1,5 +1,9 @@
 import pickle
 import shlex
+from itertools import chain, groupby
+from operator import itemgetter
+import collections
+
 import normalize
 from queryprocessing import process_query
 from indexing import PositionalPosting
@@ -98,7 +102,9 @@ class DiskIndex(object):
     #     1. The document ID
     #     2. The term frequency
     #     3. Positions (optional)
-    def retrieve_postings(self, query, positions=False):
+
+    # ASK NEAL IF YOU CAN USE THE POSITIONS FLAG INSTEAD OF HAVING A SEPARATE METHOD
+    def retrieve_postings(self, query):
         """Retrieve postings lists with/without positional information"""
         query_literals = process_query(query)
         vocab_table_file = open('{}vocabtable.bin'.format(self.path), 'rb')
@@ -109,17 +115,13 @@ class DiskIndex(object):
         index = {}
 
         for literal in query_literals:
-            # term count stored in first 4 bytes of file
-            # term_count_bytes = vocab_table_file.read(4)
-            # term_count = int.from_bytes(term_count_bytes, byteorder='big')
-
-            # # use linear search for now, will user B+ tree later
-            # last_position_bytes = vocab_table_file.read(8)
-            # last_position = int.from_bytes(last_position_bytes, byteorder='big')
-
             all_terms = literal.replace('"', '').split()
             all_terms = [normalize.query_normalize(term) for term in all_terms]
             all_terms = set(all_terms)
+            
+            positions = False
+            if len(all_terms) > 1:
+                positions = True
 
             for subliteral in all_terms:
                 # add term to index
@@ -152,7 +154,7 @@ class DiskIndex(object):
                         last_doc_id = 0
 
                         # only doc id to index if current vocab term
-                        if term.decode() in all_terms:
+                        if term.decode() == subliteral:
                             for d in range(number_docs):
                                 doc_id_gap_bytes = postings_file.read(4)
                                 doc_id_gap = int.from_bytes(doc_id_gap_bytes, byteorder='big')
@@ -161,7 +163,7 @@ class DiskIndex(object):
                                 # READ TERM FREQUENCY
                                 term_freq_bytes = postings_file.read(4)
                                 term_freq = int.from_bytes(term_freq_bytes, byteorder='big')
-                                
+                    
                                 current_posting = [last_doc_id, term_freq]
                                 
                                 # READ TERM POSITIONS
@@ -184,7 +186,47 @@ class DiskIndex(object):
         vocab_file.close()
         postings_file.close()
         return index
+
+    def query_search(self, query, index):
+        query_literals = process_query(query)
+        success_doc_ids = []
+       
+        for literal in query_literals:
+            queries = shlex.split(literal)
+            docs_with_all_queries = []
+            for subliterals in queries:
+                subliterals = subliterals.split()
+                subliterals = [normalize.query_normalize(term) for term in subliterals]
+                combined_postings_lists = list(chain.from_iterable([index[subliteral] for subliteral in subliterals]))
+                combined_postings_lists = sorted(combined_postings_lists, key=lambda t:t[0])
+                docs_with_current_query = []
+
+                # SPLIT POSTINGS BY DOCUMENT ID
+                for key,doc_postings in groupby(combined_postings_lists, itemgetter(0)):
+                    doc_postings = list(doc_postings)
+                    if len(subliterals) > 1:
+                        # CHECK IF LENGTH OF POSTINGS IS THE SAME AS THE SUBLITERALS
+                        if len(doc_postings) == len(subliterals):
+                            subliteral_found = True
+                            postings = [x[2] for x in doc_postings]
+                            for i in range(len(postings)):
+                                postings[i] = [posting - i for posting in postings[i]]
+                                                        
+                            results = set.intersection(*map(set, postings))
+                            
+                            if len(results) > 0:
+                                docs_with_current_query.append(doc_postings[0][0])
+
+                    else:
+                        docs_with_current_query.append(doc_postings[0][0])
+
+                docs_with_all_queries.append(docs_with_current_query)
+
+            # INTERSECT DOC IDs WITH SUCCESSFUL QUERIES
+            ids_intersect = list(set.intersection(*map(set, docs_with_all_queries)))
+            success_doc_ids.extend(ids_intersect)
         
+        return sorted(set(success_doc_ids))
 
 if __name__ == "__main__":
     # indexfile = open('bin/indexes', 'rb')
@@ -192,6 +234,8 @@ if __name__ == "__main__":
 
     # index_writer = IndexWriter()
     # index_writer.build_index(indexes[0])
-
+    query = '\"a gateway to the wilderness\" + filter'
     disk_index = DiskIndex(path='bin/')
-    temp_index = disk_index.retrieve_postings('\"a gateway to the wilderness\" + filter', positions=True)
+    temp_index = disk_index.retrieve_postings(query)
+    query_results = disk_index.query_search(query, temp_index)
+    print(len(query_results))

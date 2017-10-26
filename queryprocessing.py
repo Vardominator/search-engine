@@ -20,7 +20,7 @@ def process_query(query, kgram_index=None):
 
 def query_search(literals, index):
     """Searches index for literals in query. Merges results of each literal."""
-    succes_doc_ids = []
+    success_doc_ids = []
 
     for literal in literals:
         # SKILL LITERAL IF ALL TERMS DO NOT EXIST IN THE INDEX
@@ -38,13 +38,16 @@ def query_search(literals, index):
             # NORMALIZE TERMS IN PHRASE
             subliterals = [normalize.query_normalize(term) for term in subliterals]
 
+            for subliteral in subliterals:
+                print(len(index[subliteral]))
+
             # COMBINE POSITIONAL POSTING OBJECTS FOR A LITERAL
             combined_postings = list(chain.from_iterable([index[subliteral] for subliteral in subliterals]))
             # EXTRACT POSTINGS LISTS FOR EVERY POSITIONAL POSTING OBJECT
             combined_postings_lists = [posting.postings_list for posting in combined_postings]
             # SORT LISTS BY DOCUMENT ID
             combined_postings_lists = sorted(combined_postings_lists, key=lambda t:t[0])
-
+            print(len(combined_postings_lists))
             docs_with_current_query = []
 
             # SPLIT POSTINGS BY DOCUMENT ID
@@ -54,7 +57,7 @@ def query_search(literals, index):
                 if len(subliterals) > 1:
                     # CHECK IF LENGTH OF POSTINGS IS THE SAME AS THE SUBLITERALS
                     if len(doc_postings) == len(subliterals):
-                        subliteral_found = True
+                        # print(len(doc_postings))
                         postings = [x[1] for x in doc_postings]
 
                         for i in range(len(postings)):
@@ -71,9 +74,9 @@ def query_search(literals, index):
 
         # INTERSECT DOC IDs WITH SUCCESSFUL QUERIES
         ids_intersect = list(set.intersection(*map(set, docs_with_all_queries)))
-        succes_doc_ids.extend(ids_intersect)
+        success_doc_ids.extend(ids_intersect)
 
-    return sorted(set(succes_doc_ids))
+    return sorted(set(success_doc_ids))
 
 
 def wildcard_query(query, kgram_index):
