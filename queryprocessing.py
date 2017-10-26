@@ -9,7 +9,7 @@ from operator import itemgetter
 import normalize
 from kgram import KGramIndex
 
-def process_query(query, kgram_index):
+def process_query(query, kgram_index=None):
     """Isolate query literals"""
     if '*' in query:
         literals = wildcard_query(query, kgram_index)
@@ -27,7 +27,7 @@ def query_search(literals, index):
         all_terms = literal.replace('"', '').split()
         all_terms = [normalize.query_normalize(term) for term in all_terms]
         if not all(term in index for term in all_terms):
-            continue       
+            continue
 
         queries = shlex.split(literal)
         docs_with_all_queries = []

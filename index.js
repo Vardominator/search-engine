@@ -94,7 +94,7 @@ $(document).ready(function(){
         var res = $.parseJSON(response);
         $("#relevant_list").empty();
         console.log(res.files.length);
-
+        console.log(res.doc_ids)
         if(res.files.length == 0){
             console.log(res.files.length);
             $("#selected_document_body").text("No documents found.");
