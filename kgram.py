@@ -1,5 +1,9 @@
 from itertools import chain
+from operator import itemgetter
 from collections import defaultdict
+import numpy as np
+import heapq
+
 
 class KGramIndex(object):
     """KGram Index that builds dictionaries of grams up to the designated
@@ -28,8 +32,6 @@ class KGramIndex(object):
         if input_list:
             for word in input_list:
                 self.map_ngram(word)
-        else:
-            print('Empty list passed to kgram parser.')
 
     def get_words(self, gram):
         """Returns a list of all words found containing kgram from index.
@@ -37,7 +39,6 @@ class KGramIndex(object):
         if gram in self.index:
             return self.index[gram]
         else:
-            print("Key not found in kgram index: {}".format(gram))
             return []
 
     def get_intersection_grams(self, grams):
@@ -56,11 +57,45 @@ class KGramIndex(object):
         max_len = self.num_grams
         return [gram[ind:ind+(max_len)] for ind in range(0, len(gram) - max_len + 1, 1)]
 
-    @staticmethod
-    def print_kgrams(kgram_number, word):
-        """Helper function to list kgrams for individual words"""
+    def get_kgrams(self, word):
+        """Gets grams from a word without adding to index"""
         gram_word = "$" + word + "$"
-        grams = set(zip(*[gram_word[i:] for i in range(kgram_number)]))
-        print('{}-Grams found in {}:'.format(kgram_number, word))
-        for gram in grams:
-            print(''.join(gram))
+        all_grams = set()
+        grams = map(set, [zip(*[gram_word[i:] for i in range(num_grams)]) for num_grams in range(1, self.num_grams+1)])
+        for gram_set in grams:
+            for gram in gram_set:
+                all_grams.add(''.join(gram))
+        return all_grams
+
+    def find_spelling_candidate(self, qword, num_candidates):
+        query_word_grams = self.get_kgrams(qword)
+        candidates = set()
+        for gram in query_word_grams:
+            candidates |= set(self.get_words(gram))
+        ranked = sorted(candidates, key=lambda x: self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(x)))
+        return min([(word,self.edit_dist(qword, word)) for word in ranked[:num_candidates]], key=itemgetter(1))[0]
+
+    @staticmethod
+    def calculate_jacard_coeff(qword_grams, tword_grams):
+        n = len(qword_grams.intersection(tword_grams))
+        return n / float(len(qword_grams) + len(tword_grams) - n)
+
+    @staticmethod
+    def edit_dist(qword, tword):
+        if len(qword) < len(tword):
+            return KGramIndex.edit_dist(tword, qword)
+        if len(tword) == 0:
+            return len(qword)
+        qword = np.array(tuple(qword))
+        tword = np.array(tuple(tword))
+        previous_row = np.arange(tword.size + 1)
+        for s in qword:
+            current_row = previous_row + 1
+            current_row[1:] = np.minimum(
+                    current_row[1:],
+                    np.add(previous_row[:-1], tword != s))
+            current_row[1:] = np.minimum(
+                    current_row[1:],
+                    current_row[0:-1] + 1)
+            previous_row = current_row
+        return previous_row[-1]
