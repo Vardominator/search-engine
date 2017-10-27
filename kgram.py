@@ -67,14 +67,15 @@ class KGramIndex(object):
                 all_grams.add(''.join(gram))
         return all_grams
 
-    def find_spelling_candidate(self, qword, num_candidates):
+    def find_spelling_candidate(self, qword, threshold):
         """Gets a spelling correction for a word by using the
            method described in class"""
         query_word_grams = self.get_kgrams(qword)
         candidates = set()
         for gram in query_word_grams:
             candidates |= set(self.get_words(gram))
-        ranked = sorted(candidates, key=lambda x: self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(x)))
+        # ranked = sorted(candidates, key=lambda x: -self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(x)))
+        ranked = {word for word in candidates if self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(word))>threshold}
         return min([(word,self.edit_dist(qword, word)) for word in ranked[:num_candidates]], key=itemgetter(1))[0]
 
     @staticmethod

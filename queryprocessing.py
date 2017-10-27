@@ -3,6 +3,7 @@ import sys
 import time
 import math
 import heapq
+import struct
 from collections import defaultdict
 from itertools import chain, groupby
 from operator import itemgetter
@@ -62,7 +63,7 @@ def query_search(literals, index):
 
                         for i in range(len(postings)):
                             postings[i] = [posting - i for posting in postings[i]]
-                                                    
+
                         results = set.intersection(*map(set, postings))
                         if len(results) > 0:
                             docs_with_current_query.append(doc_postings[0][0])
@@ -96,12 +97,17 @@ def ranked_query(query, k, index):
        using the "term at a time" algorithm"""
     A = defaultdict(int)
     heap = []
-    query = [query_normalize(word) for word in query.split()]
+    query = [normalize.query_normalize(word) for word in query.split()]
     for term in query:
-        wqt = math.log(1 + len(index)/len(index[term]))
-        for posting in index[term]:
-            wdt = 1 + math.log(len(postings[1]))
-            A[postings[0]] += wdt * wqt
-    for doc, score in A.items():
-        heapq.heappush(heap, (-score, doc))
-    return [key for value, key in heapq.nsmallest(k, heap)]
+        if term in index.keys():
+            wqt = math.log(1 + len(index)/len(index[term]))
+            for posting in index[term]:
+                wdt = 1 + math.log(len(posting.postings_list[1]))
+                A[posting.postings_list[0]] += wdt * wqt
+    with open('bin/docWeights.bin', 'rb') as f:
+        for doc, score in A.items():
+            f.seek(8*(doc))
+            ld = f.read(8)
+            ld = struct.unpack('d', ld)
+            heapq.heappush(heap, (-score/ld[0], doc))
+    return [(key, -value) for value, key in heapq.nsmallest(k, heap)]
