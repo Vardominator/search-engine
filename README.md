@@ -55,8 +55,8 @@
 * Toggle modes (index and query) in GUI
 * Milestone 2:
   * Build the index on disk (DONE)
-  * Querying the index
-  * B+ tree for vocabulary
+  * Querying the index (DONE)
+  * B+ tree for vocabulary (DONE)
 ### Both
 * Print ranked retrieval results
 * Enjoy a nice glass of rye
