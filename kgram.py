@@ -68,6 +68,8 @@ class KGramIndex(object):
         return all_grams
 
     def find_spelling_candidate(self, qword, num_candidates):
+        """Gets a spelling correction for a word by using the
+           method described in class"""
         query_word_grams = self.get_kgrams(qword)
         candidates = set()
         for gram in query_word_grams:
@@ -82,6 +84,8 @@ class KGramIndex(object):
 
     @staticmethod
     def edit_dist(qword, tword):
+        """Calculates the Levenshtein edit distance
+           between two words using Dynamic Programming"""
         if len(qword) < len(tword):
             return KGramIndex.edit_dist(tword, qword)
         if len(tword) == 0:
