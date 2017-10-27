@@ -44,12 +44,13 @@
 ## TODOs
 ### Nick
 * Fix Kgram: AND queries
-* More phrase query unit tests
+* More phrase query unit tests (DONE)
 * Milestone 2:
-  * Ranked retrievals
-  * Spelling correction
-  * Kgram on disk
-  * Calculate document weights
+  * Ranked retrievals (DONE)
+  * Spelling correction (DONE)
+  * Kgram on disk (DONE-ISH)
+  * Calculate document weights (DONE)
+  * New unit tests
 ### Vardo
 * Fix phrase queries (DONE)
 * Toggle modes (index and query) in GUI
