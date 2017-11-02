@@ -13,14 +13,18 @@ from indexing import PositionalPosting
 class IndexWriter(object):
     """Writes inverted index to disk. Terms are extracted from the index.
        The terms are written to disk and the positions of the terms are
-       stored in a list. These positions are then used to to write the 
+       stored in a list. These positions are then used to to write the
        postings to disk."""
 
     def __init__(self, path='bin/'):
         self.path = path
 
-    def build_index(self, index):
+    def build_index(self, indexes):
         """Calls member methods to write vocab and postings to disk."""
+        index = indexes[0]
+        kgram_index = indexes[1]
+        with open('{}kgram.bin', 'wb') as f:
+            pickle.dump(kgram_index, f)
         dictionary = list(index.keys())
         vocab_positions = [None]*len(dictionary)
         self.write_postings(self.path, index, dictionary, vocab_positions)
