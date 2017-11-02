@@ -30,13 +30,11 @@ $(document).ready(function(){
 
     // SHOW TERMS
     $("#showterms_button").click(function(e){
-        
         $.ajax({
             type: "POST",
             url: "http://127.0.0.1:5000/showterms",
             success: buildVocabList
         });
-
     });
 
     // EXECUTE QUERY
@@ -68,6 +66,27 @@ $(document).ready(function(){
         $('#selected_document_title').text("");
         $('#selected_document_body').text("");
         
+    });
+
+    // HANDLE MODE SWITCH
+    $("#boolean").click(function(e){
+        $("#boolean").addClass("active");
+        $("#ranked").removeClass("active");
+    });
+    $("#ranked").click(function(e){
+        $("#ranked").addClass("active");
+        $("#boolean").removeClass("active");
+    });
+
+    // BUILD CHECKBOX
+    $("#build_checkbox").click(function(e){
+        if($("#build_checkbox").hasClass("checked")){
+            $("#build_checkbox").removeClass("checked");
+            $('#buildindex_button').text("Use Index")
+        }else{
+            $("#build_checkbox").addClass("checked");
+            $('#buildindex_button').text("Build Index")
+        }
     });
 
     var documentBodies = {};

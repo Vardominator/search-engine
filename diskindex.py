@@ -135,13 +135,13 @@ class DiskIndex(object):
             success_doc_ids.extend(ids_intersect)
         return sorted(set(success_doc_ids))
 
+
 if __name__ == "__main__":
     # indexfile = open('bin/indexes', 'rb')
     # indexes = pickle.load(indexfile)
-
     # index_writer = IndexWriter()
     # index_writer.build_index(indexes[0])
-
+    
     query = '\"a gateway to the wilderness\" + filter'
     disk_index = DiskIndex(path='bin/')
     temp_index = disk_index.retrieve_postings(query)

@@ -28,15 +28,24 @@
     
     <div class="ui grid">
 
-      <div class="eight wide column">
+      
+      <div class="six wide column">
         <div class="ui fluid input focus">
             <input id="dir_input" type="text" placeholder="Directory...">
         </div>
       </div>
 
+      <div class="two wide column">
+        <div class="ui slider checkbox" id="build_checkbox" style="margin-top:12px; margin-right:5px">
+          <input type="checkbox" name="newsletter">
+          <label>Build</label>
+        </div>
+      </div>
+
+
       <div class="four wide column">
         <button id="buildindex_button" class="ui disabled primary fluid button">
-          Build Index
+          Use Index
         </button>
       </div>
 
@@ -48,6 +57,14 @@
 
     </div>
 
+    <div class="ui grid">
+      <div class="sixteen wide column">
+        <div class="ui two item stackable tabs menu">
+          <a class="item active" id="boolean">Boolean</a>
+          <a class="item" id="ranked">Ranked</a>
+        </div>
+      </div>
+    </div>
 
     <div class="ui active inverted dimmer" id="building_index_loader" style="display:none">
       <div class="ui large text loader">Building Index</div>
