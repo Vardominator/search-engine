@@ -3,6 +3,7 @@ import os
 import json
 import collections
 import indexing
+from unittest.mock import patch, mock_open
 
 def process_documents():
     """Helper function to pre-process documents"""
@@ -45,14 +46,15 @@ TRUE_INDEX = {
              }
 TRUE_INDEX = collections.OrderedDict(sorted(TRUE_INDEX.items(), key=lambda t:t[0]))
 
-index = indexing.create_index(docs)[0]
+with patch("builtins.open", mock_open()) as mock_file:
+    index = indexing.create_index(docs)[0]
 
 def test_index_has_all_keys():
     """Checks to make sure the index has the right number of keys"""
     assert(set(index.keys()) == set(TRUE_INDEX.keys()))
 
 def test_index_has_all_postings():
-    """Checks each word in the index to see if it has the right 
+    """Checks each word in the index to see if it has the right
        number of documents"""
     for word in index.keys():
         assert len(index[word]) == len(TRUE_INDEX[word])
