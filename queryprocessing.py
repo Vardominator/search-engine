@@ -10,16 +10,13 @@ from operator import itemgetter
 import normalize
 from kgram import KGramIndex
 
-def process_query(query, kgram_index=None):
+def process_query(query):
     """Isolate query literals"""
-    if '*' in query:
-        literals = wildcard_query(query, kgram_index)
-    else:
-        literals = query.split('+')
-        literals = list(map(str.strip, literals))
+    literals = query.split('+')
+    literals = list(map(str.strip, literals))
     return literals
 
-def query_search(literals, index):
+def query_search(literals, index, kgram_index):
     """Searches index for literals in query. Merges results of each literal."""
     success_doc_ids = []
 
@@ -27,13 +24,17 @@ def query_search(literals, index):
         # SKILL LITERAL IF ALL TERMS DO NOT EXIST IN THE INDEX
         all_terms = literal.replace('"', '').split()
         all_terms = [normalize.query_normalize(term) for term in all_terms]
-        if not all(term in index for term in all_terms):
+        if not all(term in index for term in all_terms) and "*" not in literal:
             continue
 
         queries = shlex.split(literal)
         docs_with_all_queries = []
 
         for subliterals in queries:
+            if '*' in subliterals:
+                gram_query = wildcard_query(subliterals.lower(), kgram_index)
+                docs_with_all_queries.append(list(query_search(gram_query, index, kgram_index)))
+                continue
             # SPLIT IF PHRASE CONTAINS MULTIPLE WORDS
             subliterals = subliterals.split()
             # NORMALIZE TERMS IN PHRASE

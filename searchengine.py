@@ -88,10 +88,8 @@ def query():
 
         query = request.form['query']
 
-        literals = queryprocessing.process_query(query, kgram_index)
-        print(literals)
-        search_results = queryprocessing.query_search(literals, pos_index)
-
+        literals = queryprocessing.process_query(query)
+        search_results = queryprocessing.query_search(literals, pos_index, kgram_index)
         relevant_files = []
         relevant_contents = {}
 
