@@ -1,7 +1,12 @@
+import shlex
+import sys
 import heapq
 import math
 import pickle
 import struct
+from collections import defaultdict
+from itertools import chain, groupby
+from operator import itemgetter
 
 import normalize
 from kgram import KGramIndex
@@ -18,7 +23,7 @@ class QueryProcessor(object):
         self.disk_index = DiskIndex()
 
     def query(self, query, vocab):
-        index = disk_index.retrieve_postings(query)
+        index = self.disk_index.retrieve_postings(query)
         if ranked_flag:
             results = self.ranked_query(query, THRESHOLD, index)
         else:
@@ -27,7 +32,7 @@ class QueryProcessor(object):
             print('test')
         return results
 
-    def toggle_ranked_flag(self, flag):
+    def toggle_ranked_flag(self):
         self.ranked_flag = not self.ranked_flag
 
     @staticmethod
