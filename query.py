@@ -24,7 +24,7 @@ class QueryProcessor(object):
         else:
             results = self.boolean_query(query, index)
         if kgram_index.spelling_correction(query, vocab):
-            # Do something
+            print('test')
         return results
 
     def toggle_ranked_flag(self, flag):
