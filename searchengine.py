@@ -89,7 +89,7 @@ def query():
         vocab = app.config['vocab']
         query = request.form['query']
 
-        search_results = queryprocessor.query(query, vocab)
+        search_results = queryprocessor.query(query)
         relevant_files = []
         relevant_contents = {}
 
