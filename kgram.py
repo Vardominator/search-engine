@@ -5,6 +5,8 @@ import numpy as np
 import heapq
 
 
+THRESHOLD = .31
+
 class KGramIndex(object):
     """KGram Index that builds dictionaries of grams up to the designated
        number of grams. Each word added to the index is broken into grams
@@ -77,6 +79,13 @@ class KGramIndex(object):
         # ranked = sorted(candidates, key=lambda x: -self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(x)))
         ranked = {word for word in candidates if self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(word))>threshold}
         return min([(word,self.edit_dist(qword, word)) for word in ranked], key=itemgetter(1))[0]
+
+    def spelling_correction(self, query, vocab):
+        """Returns a spelling-corrected query if necessary"""
+        terms = query.split()
+        new_terms = [term if term in vocab else self.find_spelling_candidate(term, THRESHOLD) for term in terms]
+        if not terms == new_terms:
+            return ' '.join(new_terms)
 
     @staticmethod
     def calculate_jacard_coeff(qword_grams, tword_grams):
