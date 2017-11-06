@@ -16,10 +16,15 @@ $(document).ready(function(){
         $('#building_index_loader').show();
         var dir = $('#dir_input').val();
 
+        var buildIndex = false
+        if($("#build_checkbox").hasClass("checked")){
+            buildIndex = true
+        }
+
         $.ajax({
             type: "POST",
             url: "http://127.0.0.1:5000/buildindex",
-            data : {corpus_dir: dir},
+            data : {corpus_dir: dir, build: buildIndex},
             success: populateTable
         });
 

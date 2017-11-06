@@ -58,13 +58,6 @@ class IndexWriter(object):
         conn.close()
         postings_file.close()
 
-    def get_vocab(self):
-        conn = sqlite3.connect('bin/vocabtable.db')
-        conn.row_factory = lambda cursor, row: row[0]
-        c = conn.cursor()
-        vocab = c.execute('SELECT term FROM vocabtable').fetchall()
-        return vocab
-
 
 class DiskIndex(object):
     """Uses disk index and user query to create in-memory index with terms
@@ -148,6 +141,15 @@ class DiskIndex(object):
             ids_intersect = list(set.intersection(*map(set, docs_with_all_queries)))
             success_doc_ids.extend(ids_intersect)
         return sorted(set(success_doc_ids))
+
+    def get_vocab(self):
+        print('getting vocab')
+        conn = sqlite3.connect('bin/vocabtable.db')
+        conn.row_factory = lambda cursor, row: row[0]
+        c = conn.cursor()
+        vocab = c.execute('SELECT term FROM vocabtable').fetchall()
+        conn.close()
+        return vocab
 
 
 if __name__ == "__main__":

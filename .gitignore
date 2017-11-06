@@ -251,6 +251,7 @@ indexes
 *all-nps-sites*
 data/documents
 data/testdocuments
+bin_backup/
 
 # Compiled python
 *.pyc

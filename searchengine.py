@@ -7,6 +7,7 @@ import indexing
 import queryprocessing
 import normalize
 from diskindex import *
+from query import *
 from collections import defaultdict
 import pickle
 
@@ -30,7 +31,9 @@ def buildindex():
         docs_dir = request.form['corpus_dir']
         # boolean to build new index or use existing
         build = request.form['build']
-
+        build = True if build is 'true' else False
+        print(build)
+        print(docs_dir)
         id = 0
         for root,dirs,files in os.walk(docs_dir):
             files = sorted(files)
@@ -45,36 +48,27 @@ def buildindex():
                                            'title': content['title'],
                                            'url': content['url']}
 
-        # indexes = indexing.create_index(docs)
-        # indexfile = open('bin/indexes', 'rb')
-        # indexes = pickle.load(indexfile)
-        # pickle.dump(indexes, indexfile)
-        # pos_index = indexes[0]
-        # kgram_index = indexes[1]
-
         if build:
             indexwriter = IndexWriter()
             indexwriter.build_index(docs)
         
-        diskindex = DiskIndex()
-        # queryprocessor = QueryProcessor()
+        queryprocessor = QueryProcessor()
+        print('asdfasdf')
+        diskindex = queryprocessor.disk_index
+        vocab = diskindex.get_vocab()
+        print('query processor instantiated')
 
         app.config['diskindex'] = diskindex
-        app.config['vocab'] = diskindex.get_vocab()
+        app.config['queryprocessor'] = queryprocessor
+        app.config['vocab'] = vocab
         app.config['file_contents'] = file_contents
-        # app.config['queryprocessor'] = queryprocessor
-
-        # STORE IN CONTEXT
-        # app.config['pos_index'] = pos_index
-        # app.config['kgram_index'] = kgram_index
         app.config['doc_id_files'] = doc_id_files
-        # app.config['vocab'] = diskindex.VOCAB
 
         return json.dumps({
                             'files': files,
                             'doc_count': len(files),
-                            'terms': list(pos_index.keys()),
-                            'term_count': len(pos_index)
+                            'terms': vocab,
+                            'term_count': len(vocab)
                           })
 
 @app.route('/showterms', methods=['GET', 'POST'])
