@@ -12,28 +12,24 @@ import normalize
 from kgram import KGramIndex
 from diskindex import DiskIndex
 
-THRESHOLD = .31
 
 class QueryProcessor(object):
 
-    def __init__(self):
-        with open('bin/kgram.bin', 'rb') as f:
+    def __init__(self, path='bin/'):
+        with open('{}kgram.bin'.format(path), 'rb') as f:
             self.kgram_index = pickle.load(f)
         self.ranked_flag = False
-        self.disk_index = DiskIndex()
+        self.disk_index = DiskIndex(path)
+        self.k_docs = 10
 
-    def query(self, query, vocab):
+    def query(self, query):
         index = self.disk_index.retrieve_postings(query)
-        if ranked_flag:
-            results = self.ranked_query(query, THRESHOLD, index)
-        else:
-            results = self.boolean_query(query, index)
-        if kgram_index.spelling_correction(query, vocab):
-            print('test')
-        return results
+        if self.ranked_flag:
+            return self.ranked_query(query, self.k_docs, index)
+        return self.boolean_query(query, index)
 
-    def toggle_ranked_flag(self):
-        self.ranked_flag = not self.ranked_flag
+    def set_ranked_flag(self, setting):
+        self.ranked_flag = setting
 
     @staticmethod
     def ranked_query(query, k, index):
@@ -46,13 +42,12 @@ class QueryProcessor(object):
             if term in index.keys():
                 wqt = math.log(1 + len(index)/len(index[term]))
                 for posting in index[term]:
-                    wdt = 1 + math.log(len(posting.postings_list[1]))
-                    A[posting.postings_list[0]] += wdt * wqt
+                    wdt = 1 + math.log(posting[1])
+                    A[posting[0]] += wdt * wqt
         with open('bin/docWeights.bin', 'rb') as f:
             for doc, score in A.items():
                 f.seek(8*(doc))
-                ld = f.read(8)
-                ld = struct.unpack('d', ld)
+                ld = struct.unpack('d', f.read(8))
                 heapq.heappush(heap, (-score/ld[0], doc))
         return [(key, -value) for value, key in heapq.nsmallest(k, heap)]
 
