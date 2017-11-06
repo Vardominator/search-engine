@@ -23,11 +23,11 @@ class PositionalPosting():
         self.postings_list[1].append(position)
 
 
-def create_index(processed_docs):
+def create_index(processed_docs, path='bin/'):
     """Creates and returns the Positional Inverted Index and Kgram Index"""
     pos_inv_index = {}
 
-    doc_weights = open('bin/docWeights.bin', 'wb')
+    doc_weights = open('{}docWeights.bin'.format(path), 'wb')
     for i in range(len(processed_docs)):
         terms = processed_docs[i].split()
         term_map = collections.defaultdict(int)

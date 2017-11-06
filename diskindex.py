@@ -1,6 +1,8 @@
 import pickle
 import shlex
 import sqlite3
+import os
+import json
 
 from itertools import chain, groupby
 from operator import itemgetter
@@ -20,32 +22,32 @@ class IndexWriter(object):
         self.docs_dir = docs_dir
         self.path = path
         self.vocab = set()
+        self.docids = []
 
     def build_index(self, processed_docs):
         """Calls member methods to write vocab and postings to disk."""
         indexes = memoryindex.create_index(processed_docs)
         index = indexes[0]
         kgram_index = indexes[1]
-        self.vocab = indexes.VOCAB
-
-        with open('{}kgram.bin', 'wb') as f:
+        with open('{}indexes.bin'.format(self.path), 'wb') as f:
+            pickle.dump(index, f)
+        with open('{}kgram.bin'.format(self.path), 'wb') as f:
             pickle.dump(kgram_index, f)
         dictionary = list(index.keys())
         vocab_positions = [None]*len(dictionary)
         self.write_postings(self.path, index, dictionary, vocab_positions)
-        
+
     def write_postings(self, path, index, dictionary, vocab_positions):
         """Writes postings to disk."""
+        term_positions = list()
         postings_file = open('{}postings.bin'.format(path), 'wb')
         conn = sqlite3.connect('bin/vocabtable.db')
         c = conn.cursor()
-        c.execute('''DROP TABLE [IF EXISTS] vocabtable''')
+        c.execute('''DROP TABLE vocabtable''')
         c.execute('''CREATE TABLE vocabtable (term TEXT, position INTEGER)''')
-        conn.commit()
         for term in dictionary:
             postings = index[term]
-            c.execute("INSERT INTO vocabtable VALUES (?, ?)", (term, postings_file.tell()))
-            conn.commit()
+            term_positions.append((term, postings_file.tell()))
             postings_file.write((len(postings)).to_bytes(4, byteorder='big'))
             last_docid = 0
             for posting in postings:
@@ -55,6 +57,8 @@ class IndexWriter(object):
                 postings_file.write((len(postings_list[1])).to_bytes(4, byteorder='big'))
                 for position in postings_list[1]:
                     postings_file.write((position).to_bytes(4, byteorder='big'))
+        c.executemany("INSERT INTO vocabtable VALUES (?, ?)",term_positions)
+        conn.commit()
         conn.close()
         postings_file.close()
 
@@ -77,9 +81,6 @@ class DiskIndex(object):
             all_terms = literal.replace('"', '').split()
             all_terms = [normalize.query_normalize(term) for term in all_terms]
             all_terms = set(all_terms)
-            positions = False
-            if len(all_terms) > 1:
-                positions = True
             for subliteral in all_terms:
                 if subliteral not in index:
                     index[subliteral] = []
@@ -98,13 +99,12 @@ class DiskIndex(object):
                             term_freq_bytes = postings_file.read(4)
                             term_freq = int.from_bytes(term_freq_bytes, byteorder='big')
                             current_posting = [last_doc_id, term_freq]
-                            if positions:
-                                doc_positions = []
-                                for f in range(term_freq):
-                                    position_bytes = postings_file.read(4)
-                                    position = int.from_bytes(position_bytes, byteorder='big')
-                                    doc_positions.append(position)
-                                current_posting.append(doc_positions)
+                            doc_positions = []
+                            for f in range(term_freq):
+                                position_bytes = postings_file.read(4)
+                                position = int.from_bytes(position_bytes, byteorder='big')
+                                doc_positions.append(position)
+                            current_posting.append(doc_positions)
                             index[subliteral].append(current_posting)
 
         postings_file.close()
@@ -143,7 +143,6 @@ class DiskIndex(object):
         return sorted(set(success_doc_ids))
 
     def get_vocab(self):
-        print('getting vocab')
         conn = sqlite3.connect('bin/vocabtable.db')
         conn.row_factory = lambda cursor, row: row[0]
         c = conn.cursor()
@@ -155,11 +154,29 @@ class DiskIndex(object):
 if __name__ == "__main__":
     # indexfile = open('bin/indexes', 'rb')
     # indexes = pickle.load(indexfile)
+    # doc_id_files = {}
+    # docs_dir = 'data/documents'
+    # docs = []
+    # file_contents = {}
+    # id = 0
+    # for root,dirs,files in os.walk(docs_dir):
+    #     files = sorted(files)
+    #     for file in files:
+    #         doc_id_files[id] = file
+    #         id += 1
+    #         with open(os.path.join(docs_dir, file), 'r') as json_data:
+    #             content = json.load(json_data)
+    #             docs.append(content['body'])
+    #             file_contents[file] = {'body': content['body'],
+    #                                     'title': content['title'],
+    #                                     'url': content['url']}
     # index_writer = IndexWriter()
-    # index_writer.build_index(indexes[0])
-    
-    query = '\"a gateway to the wilderness\" + filter'
+    # index_writer.build_index(docs)
+
+    query = "/'a gateway to the wilderness/'"
     disk_index = DiskIndex(path='bin/')
+    vocab = disk_index.get_vocab()
+    # print(len(vocab))
     temp_index = disk_index.retrieve_postings(query)
     query_results = disk_index.query_search(query, temp_index)
     print(len(query_results))

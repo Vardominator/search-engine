@@ -24,11 +24,12 @@ class QueryProcessor(object):
 
     def query(self, query, vocab):
         index = self.disk_index.retrieve_postings(query)
-        if ranked_flag:
+        # print(index)
+        if self.ranked_flag:
             results = self.ranked_query(query, THRESHOLD, index)
         else:
             results = self.boolean_query(query, index)
-        if kgram_index.spelling_correction(query, vocab):
+        if self.kgram_index.spelling_correction(query, vocab):
             print('test')
         return results
 
@@ -88,6 +89,7 @@ class QueryProcessor(object):
                 docs_with_all_queries.append(docs_with_current_query)
             ids_intersect = list(set.intersection(*map(set, docs_with_all_queries)))
             success_doc_ids.extend(ids_intersect)
+        # print(success_doc_ids)
         return sorted(set(success_doc_ids))
 
     def wildcard_query(self, query):

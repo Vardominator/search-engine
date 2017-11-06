@@ -11,6 +11,7 @@ if not os.path.exists('data/documents'):
 
 article = 1
 for document in nps['documents']:
+    # if article <= 11:
     with open('data/documents/{}.json'.format(article), 'w') as j:
         j.write(json.dumps(document))
     article += 1

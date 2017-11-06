@@ -29,15 +29,11 @@ def buildindex():
         docs = []
         file_contents = {}
         docs_dir = request.form['corpus_dir']
-        # boolean to build new index or use existing
-        build = request.form['build']
-        build = True if build is 'true' else False
-        print(build)
-        print(docs_dir)
+        build_str = request.form['build']
+        build = True if build_str == 'true' else False
         id = 0
         for root,dirs,files in os.walk(docs_dir):
             files = sorted(files)
-
             for file in files:
                 doc_id_files[id] = file
                 id += 1
@@ -53,13 +49,11 @@ def buildindex():
             indexwriter.build_index(docs)
         
         queryprocessor = QueryProcessor()
-        print('asdfasdf')
         diskindex = queryprocessor.disk_index
         vocab = diskindex.get_vocab()
-        print('query processor instantiated')
-
-        app.config['diskindex'] = diskindex
+        
         app.config['queryprocessor'] = queryprocessor
+        app.config['diskindex'] = diskindex
         app.config['vocab'] = vocab
         app.config['file_contents'] = file_contents
         app.config['doc_id_files'] = doc_id_files
@@ -89,17 +83,13 @@ def query():
     """Process user query and return relevant documents."""
     if request.method == 'POST':
 
-        pos_index = app.config['pos_index']
-        kgram_index = app.config['kgram_index']
         doc_id_files = app.config['doc_id_files']
         file_contents = app.config['file_contents']
-
+        queryprocessor = app.config['queryprocessor']
+        vocab = app.config['vocab']
         query = request.form['query']
 
-        literals = queryprocessing.process_query(query, kgram_index)
-        print(literals)
-        search_results = queryprocessing.query_search(literals, pos_index)
-
+        search_results = queryprocessor.query(query, vocab)
         relevant_files = []
         relevant_contents = {}
 
