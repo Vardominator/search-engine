@@ -8,7 +8,7 @@ import collections
 
 import normalize
 from queryprocessing import process_query
-from indexing import PositionalPosting
+import memoryindex
 
 class IndexWriter(object):
     """Writes inverted index to disk. Terms are extracted from the index.
@@ -16,25 +16,32 @@ class IndexWriter(object):
        stored in a list. These positions are then used to to write the
        postings to disk."""
 
-    def __init__(self, path='bin/'):
+    def __init__(self, docs_dir='data/documents', path='bin/'):
+        self.docs_dir = docs_dir
         self.path = path
+        self.vocab = set()
 
-    def build_index(self, indexes):
+    def build_index(self, processed_docs):
         """Calls member methods to write vocab and postings to disk."""
+        indexes = memoryindex.create_index(processed_docs)
         index = indexes[0]
         kgram_index = indexes[1]
+        self.vocab = indexes.VOCAB
+
         with open('{}kgram.bin', 'wb') as f:
             pickle.dump(kgram_index, f)
         dictionary = list(index.keys())
         vocab_positions = [None]*len(dictionary)
         self.write_postings(self.path, index, dictionary, vocab_positions)
-
+        
     def write_postings(self, path, index, dictionary, vocab_positions):
         """Writes postings to disk."""
         postings_file = open('{}postings.bin'.format(path), 'wb')
         conn = sqlite3.connect('bin/vocabtable.db')
         c = conn.cursor()
+        c.execute('''DROP TABLE [IF EXISTS] vocabtable''')
         c.execute('''CREATE TABLE vocabtable (term TEXT, position INTEGER)''')
+        conn.commit()
         for term in dictionary:
             postings = index[term]
             c.execute("INSERT INTO vocabtable VALUES (?, ?)", (term, postings_file.tell()))
@@ -51,6 +58,13 @@ class IndexWriter(object):
         conn.close()
         postings_file.close()
 
+    def get_vocab(self):
+        conn = sqlite3.connect('bin/vocabtable.db')
+        conn.row_factory = lambda cursor, row: row[0]
+        c = conn.cursor()
+        vocab = c.execute('SELECT term FROM vocabtable').fetchall()
+        return vocab
+
 
 class DiskIndex(object):
     """Uses disk index and user query to create in-memory index with terms
@@ -63,7 +77,7 @@ class DiskIndex(object):
         """Retrieve postings lists with/without positional information"""
         query_literals = process_query(query)
         postings_file = open('{}postings.bin'.format(self.path), 'rb')
-        conn = sqlite3.connect('bin/vocabtable.db')
+        conn = sqlite3.connect('{}vocabtable.db'.format(self.path))
         c = conn.cursor()
         index = {}
         for literal in query_literals:

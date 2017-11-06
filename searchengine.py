@@ -6,6 +6,7 @@ import time
 import indexing
 import queryprocessing
 import normalize
+from diskindex import *
 from collections import defaultdict
 import pickle
 
@@ -22,11 +23,13 @@ def home():
 
 @app.route('/buildindex', methods=['GET', 'POST'])
 def buildindex():
-    """Parse files of given directory, build index, and return."""
+    """Parse files of given directory, build in-memory index index, and return."""
     if request.method == 'POST':
         docs = []
         file_contents = {}
         docs_dir = request.form['corpus_dir']
+        # boolean to build new index or use existing
+        build = request.form['build']
 
         id = 0
         for root,dirs,files in os.walk(docs_dir):
@@ -43,18 +46,29 @@ def buildindex():
                                            'url': content['url']}
 
         # indexes = indexing.create_index(docs)
-        indexfile = open('bin/indexes', 'rb')
-        indexes = pickle.load(indexfile)
+        # indexfile = open('bin/indexes', 'rb')
+        # indexes = pickle.load(indexfile)
         # pickle.dump(indexes, indexfile)
-        pos_index = indexes[0]
-        kgram_index = indexes[1]
+        # pos_index = indexes[0]
+        # kgram_index = indexes[1]
+
+        if build:
+            indexwriter = IndexWriter()
+            indexwriter.build_index(docs)
+        
+        diskindex = DiskIndex()
+        # queryprocessor = QueryProcessor()
+
+        app.config['diskindex'] = diskindex
+        app.config['vocab'] = diskindex.get_vocab()
+        app.config['file_contents'] = file_contents
+        # app.config['queryprocessor'] = queryprocessor
 
         # STORE IN CONTEXT
-        app.config['pos_index'] = pos_index
-        app.config['kgram_index'] = kgram_index
+        # app.config['pos_index'] = pos_index
+        # app.config['kgram_index'] = kgram_index
         app.config['doc_id_files'] = doc_id_files
-        app.config['file_contents'] = file_contents
-        app.config['vocab'] = indexing.VOCAB
+        # app.config['vocab'] = diskindex.VOCAB
 
         return json.dumps({
                             'files': files,
@@ -88,8 +102,10 @@ def query():
 
         query = request.form['query']
 
-        literals = queryprocessing.process_query(query)
-        search_results = queryprocessing.query_search(literals, pos_index, kgram_index)
+        literals = queryprocessing.process_query(query, kgram_index)
+        print(literals)
+        search_results = queryprocessing.query_search(literals, pos_index)
+
         relevant_files = []
         relevant_contents = {}
 
