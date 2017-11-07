@@ -22,16 +22,9 @@ class QueryProcessor(object):
         self.k_docs = 10
 
     def query(self, query, ranked_flag):
-        print(ranked_flag)
-        index = self.disk_index.retrieve_postings(query)
-<<<<<<< HEAD
-        if self.ranked_flag:
-            return self.ranked_query(query, self.k_docs)
-=======
         if ranked_flag:
-            print(ranked_flag)
-            return self.ranked_query(query, self.k_docs, index)
->>>>>>> 5418073e3a17a46f5432f07283b052313d485ba2
+            return self.ranked_query(query, self.k_docs)
+        index = self.disk_index.retrieve_postings(query)
         return self.boolean_query(query, index)
 
     def set_ranked_flag(self, setting):
@@ -47,14 +40,12 @@ class QueryProcessor(object):
             postings = self.disk_index.get_postings(term)
             wqt = math.log(1 + len(postings)/len(postings))
             for posting in postings:
-                print(posting)
                 wdt = 1 + math.log(posting[1])
                 A[posting[0]] += wdt * wqt
         with open('bin/docWeights.bin', 'rb') as f:
             for doc, score in A.items():
                 f.seek(8*(doc))
                 length = f.read(8)
-                print(length)
                 ld = struct.unpack('d', length)
                 heapq.heappush(heap, (-score/ld[0], doc))
         return [(key, -value) for value, key in heapq.nsmallest(k, heap)]
@@ -68,7 +59,9 @@ class QueryProcessor(object):
             for subliterals in queries:
                 if '*' in subliterals:
                     gram_query = self.wildcard_query(subliterals.lower())
-                    docs_with_all_queries.append(list(self.query(gram_query)))
+                    gram_query = '+'.join(gram_query)
+                    print(gram_query)
+                    docs_with_all_queries.append(list(self.query(gram_query, False)))
                     continue
                 subliterals = subliterals.split()
                 subliterals = [normalize.query_normalize(term) for term in subliterals]
