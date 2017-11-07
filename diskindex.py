@@ -26,8 +26,7 @@ class IndexWriter(object):
 
     def build_index(self, processed_docs):
         """Calls member methods to write vocab and postings to disk."""
-        with open('bin/indexes', 'rb') as f:
-            indexes = pickle.load(f)
+        indexes = memoryindex.create_index(processed_docs, self.path)
         index = indexes[0]
         kgram_index = indexes[1]
         with open('{}index.bin'.format(self.path), 'wb') as f:
@@ -36,14 +35,16 @@ class IndexWriter(object):
             pickle.dump(kgram_index, f)
         dictionary = list(index.keys())
         vocab_positions = [None]*len(dictionary)
-        self.write_postings(self.path, index, dictionary, vocab_positions)
+        self.write_postings(index, dictionary, vocab_positions)
 
-    def write_postings(self, path, index, dictionary, vocab_positions):
+    def write_postings(self, index, dictionary, vocab_positions):
         """Writes postings to disk."""
         term_positions = list()
-        postings_file = open('{}postings.bin'.format(path), 'wb')
-        conn = sqlite3.connect('bin/vocabtable.db')
+        postings_file = open('{}postings.bin'.format(self.path), 'wb')
+        conn = sqlite3.connect('{}vocabtable.db'.format(self.path))
         c = conn.cursor()
+        c.execute('''DROP TABLE if exists vocabtable''')
+        conn.commit()
         c.execute('''CREATE TABLE vocabtable (term TEXT, position INTEGER)''')
         for term in dictionary:
             postings = index[term]
@@ -179,7 +180,7 @@ class DiskIndex(object):
         return sorted(set(success_doc_ids))
 
     def get_vocab(self):
-        conn = sqlite3.connect('bin/vocabtable.db')
+        conn = sqlite3.connect('{}vocabtable.db'.format(self.path))
         conn.row_factory = lambda cursor, row: row[0]
         c = conn.cursor()
         vocab = c.execute('SELECT term FROM vocabtable').fetchall()
@@ -188,8 +189,8 @@ class DiskIndex(object):
 
 
 if __name__ == "__main__":
-    indexfile = open('bin/indexes', 'rb')
-    indexes = pickle.load(indexfile)
+    # indexfile = open('bin/indexes', 'rb')
+    # indexes = pickle.load(indexfile)
     doc_id_files = {}
     docs_dir = 'data/documents'
     docs = []

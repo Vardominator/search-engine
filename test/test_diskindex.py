@@ -1,3 +1,4 @@
+import json
 import os
 import diskindex
 
@@ -17,6 +18,9 @@ def process_documents():
 
 TEST_DOCS = process_documents()
 
+if not os.path.exists('test/bin'):
+    os.mkdir('test/bin')
+
 def test_index_creation():
     iw = diskindex.IndexWriter(docs_dir='test/test_docs',path='test/bin/')
     iw.build_index(TEST_DOCS)
@@ -24,6 +28,6 @@ def test_index_creation():
 
 def test_all_files_exist():
     path = 'test/bin/'
-    assert os.path.isfile('{}index.bin'.format(path)) and
-           os.path.isfile('{}kgram.bin'.format(path)) and
-           os.path.isfile('{}vocabtable.db'.format(path))
+    assert (os.path.isfile('{}index.bin'.format(path)) and
+            os.path.isfile('{}kgram.bin'.format(path)) and
+            os.path.isfile('{}vocabtable.db'.format(path)))
