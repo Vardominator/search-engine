@@ -87,13 +87,21 @@ def query():
         file_contents = app.config['file_contents']
         queryprocessor = app.config['queryprocessor']
         vocab = app.config['vocab']
-        query = request.form['query']
+        ranked_str = request.form['rankedRetrieval']
 
-        search_results = queryprocessor.query(query)
+        query = request.form['query']
+        ranked = True if ranked_str == 'true' else False
+        search_results = queryprocessor.query(query, ranked)
         relevant_files = []
         relevant_contents = {}
+        scores = []
 
-        for doc_id in search_results:
+        for result in search_results:
+            if ranked:
+                doc_id = result[0]
+                scores.append(result[1])
+            else:
+                doc_id = result
             file = doc_id_files[doc_id]
             relevant_files.append(file)
             relevant_contents[file] = file_contents[file]
@@ -101,7 +109,9 @@ def query():
         return json.dumps({
                             'doc_ids': search_results,
                             'files': relevant_files,
-                            'contents': relevant_contents
+                            'contents': relevant_contents,
+                            'ranked': ranked,
+                            'scores': scores
                           })
 
 
