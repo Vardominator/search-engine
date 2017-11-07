@@ -3,7 +3,9 @@ from operator import itemgetter
 from collections import defaultdict
 import numpy as np
 import heapq
+import re
 
+from normalize import remove_special_characters
 
 THRESHOLD = .31
 
@@ -82,10 +84,13 @@ class KGramIndex(object):
 
     def spelling_correction(self, query, vocab):
         """Returns a spelling-corrected query if necessary"""
-        terms = query.split()
-        new_terms = [term if term in vocab else self.find_spelling_candidate(term, THRESHOLD) for term in terms]
+        terms = re.findall("\w+", query)
+        new_terms = [term if remove_special_characters(term) in vocab else self.find_spelling_candidate(term, THRESHOLD) for term in terms]
         if not terms == new_terms:
-            return ' '.join(new_terms)
+            for term, new in zip(terms, new_terms):
+                if term != new:
+                    query = query.replace(term, new)
+            return query
 
     @staticmethod
     def calculate_jacard_coeff(qword_grams, tword_grams):

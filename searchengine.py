@@ -47,11 +47,11 @@ def buildindex():
         if build:
             indexwriter = IndexWriter()
             indexwriter.build_index(docs)
-        
+
         queryprocessor = QueryProcessor()
         diskindex = queryprocessor.disk_index
         vocab = diskindex.get_vocab()
-        
+
         app.config['queryprocessor'] = queryprocessor
         app.config['diskindex'] = diskindex
         app.config['vocab'] = vocab
@@ -95,6 +95,7 @@ def query():
         relevant_files = []
         relevant_contents = {}
         scores = []
+        spell_corrected = queryprocessor.check_spelling(query, vocab)
 
         for result in search_results:
             if ranked:
@@ -106,6 +107,7 @@ def query():
             relevant_files.append(file)
             relevant_contents[file] = file_contents[file]
 
+        print(spell_corrected)
         return json.dumps({
                             'doc_ids': search_results,
                             'files': relevant_files,

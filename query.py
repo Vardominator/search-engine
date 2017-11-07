@@ -28,8 +28,8 @@ class QueryProcessor(object):
         index = self.disk_index.retrieve_postings(query)
         return self.boolean_query(query, index)
 
-    def set_ranked_flag(self, setting):
-        self.ranked_flag = setting
+    def check_spelling(self, query, vocab):
+        return self.kgram_index.spelling_correction(query, vocab)
 
     def ranked_query(self, query, k):
         """Returns the k most relevant documents from the corpus for a query,
@@ -39,10 +39,11 @@ class QueryProcessor(object):
         query = [normalize.query_normalize(word) for word in query.split()]
         for term in query:
             postings = self.disk_index.get_postings(term)
-            wqt = math.log(1 + self.vocab_length/len(postings))
-            for posting in postings:
-                wdt = 1 + math.log(posting[1])
-                A[posting[0]] += wdt * wqt
+            if postings:
+                wqt = math.log(1 + self.vocab_length/len(postings))
+                for posting in postings:
+                    wdt = 1 + math.log(posting[1])
+                    A[posting[0]] += wdt * wqt
         with open('bin/docWeights.bin', 'rb') as f:
             for doc, score in A.items():
                 f.seek(8*(doc))
