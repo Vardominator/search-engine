@@ -44,24 +44,23 @@ $(document).ready(function(){
 
     // EXECUTE QUERY
     $("#query").change(function(e){
-        var query_input = $('#query').val();
+        var queryInput = $('#query').val();
+        var ranked = $("#ranked").hasClass('active')
 
-        if(query_input.includes(":stem")){
-            var term = query_input.replace(":stem", "").trim()
-            console.log(term);
+        if(queryInput.includes(":stem")){
+            var term = queryInput.replace(":stem", "").trim()
             $.ajax({
                 type: "POST",
                 url: "http://127.0.0.1:5000/stem",
                 data : {term: term},
                 success: printTermStem
             });
-
         }else{
             $('#retrieve_documents_loader').show();
             $.ajax({
                 type: "POST",
                 url: "http://127.0.0.1:5000/query",
-                data : {query: query_input},
+                data : {query: queryInput, rankedRetrieval:ranked},
                 success: buildRelevantList
             });
         }
@@ -107,7 +106,6 @@ $(document).ready(function(){
     // PRINT DOCUMENT AND TERM COUNT FROM INDEX
     function populateTable(response){
         var res = $.parseJSON(response);
-        console.log(res);
         $("#document_count").text(res.doc_count);
         $("#term_count").text(res.term_count);
         $('#building_index_loader').hide()
@@ -117,12 +115,8 @@ $(document).ready(function(){
     function buildRelevantList(response){
         var res = $.parseJSON(response);
         $("#relevant_list").empty();
-        console.log(res.files.length);
-        console.log(res.doc_ids)
         if(res.files.length == 0){
-            console.log(res.files.length);
             $("#selected_document_body").text("No documents found.");
-            
         }else{
 
             $.each(res.files, function(index, file){
@@ -146,10 +140,21 @@ $(document).ready(function(){
                         + '</div>'
                     + '</div>'
                 );
-            });
-
+            })
             $("#documents_found").text(res.files.length);
         }
+
+        if(res.ranked){
+            $('#selected_document_title').text("Document Scores");
+            var scores = ""
+            $.each(res.scores, function(index, score){
+                console.log(score)
+                scores += score
+                scores += '<br>'
+            })
+            $('#selected_document_body').append(scores);
+        }
+
         $('#retrieve_documents_loader').hide();
     }
 

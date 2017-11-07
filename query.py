@@ -18,13 +18,14 @@ class QueryProcessor(object):
     def __init__(self, path='bin/'):
         with open('{}kgram.bin'.format(path), 'rb') as f:
             self.kgram_index = pickle.load(f)
-        self.ranked_flag = False
         self.disk_index = DiskIndex(path)
         self.k_docs = 10
 
-    def query(self, query):
+    def query(self, query, ranked_flag):
+        print(ranked_flag)
         index = self.disk_index.retrieve_postings(query)
-        if self.ranked_flag:
+        if ranked_flag:
+            print(ranked_flag)
             return self.ranked_query(query, self.k_docs, index)
         return self.boolean_query(query, index)
 
