@@ -26,10 +26,11 @@ class IndexWriter(object):
 
     def build_index(self, processed_docs):
         """Calls member methods to write vocab and postings to disk."""
-        indexes = memoryindex.create_index(processed_docs)
+        with open('bin/indexes', 'rb') as f:
+            indexes = pickle.load(f)
         index = indexes[0]
         kgram_index = indexes[1]
-        with open('{}indexes.bin'.format(self.path), 'wb') as f:
+        with open('{}index.bin'.format(self.path), 'wb') as f:
             pickle.dump(index, f)
         with open('{}kgram.bin'.format(self.path), 'wb') as f:
             pickle.dump(kgram_index, f)
@@ -43,7 +44,6 @@ class IndexWriter(object):
         postings_file = open('{}postings.bin'.format(path), 'wb')
         conn = sqlite3.connect('bin/vocabtable.db')
         c = conn.cursor()
-        c.execute('''DROP TABLE vocabtable''')
         c.execute('''CREATE TABLE vocabtable (term TEXT, position INTEGER)''')
         for term in dictionary:
             postings = index[term]
@@ -70,6 +70,39 @@ class DiskIndex(object):
     def __init__(self, path='bin/'):
         self.path = path
 
+    def get_postings(self, term, positions=False):
+        postings_file = open('{}postings.bin'.format(self.path), 'rb')
+        conn = sqlite3.connect('{}vocabtable.db'.format(self.path))
+        c = conn.cursor()
+        term = normalize.query_normalize(term)
+        postings = list()
+        c.execute("SELECT * FROM vocabtable WHERE term=?",(term,))
+        for row in c:
+            posting_position = row[1]
+            postings_file.seek(posting_position, 0)
+            number_docs_bytes = postings_file.read(4)
+            number_docs = int.from_bytes(number_docs_bytes, byteorder='big')
+            last_doc_id = 0
+            for d in range(number_docs):
+                doc_id_gap_bytes = postings_file.read(4)
+                doc_id_gap = int.from_bytes(doc_id_gap_bytes, byteorder='big')
+                last_doc_id += doc_id_gap
+                term_freq_bytes = postings_file.read(4)
+                term_freq = int.from_bytes(term_freq_bytes, byteorder='big')
+                current_posting = [last_doc_id, term_freq]
+                doc_positions = []
+                for f in range(term_freq):
+                    position_bytes = postings_file.read(4)
+                    position = int.from_bytes(position_bytes, byteorder='big')
+                    doc_positions.append(position)
+                if positions:
+                    current_posting.append(doc_positions)
+                postings.append(current_posting)
+        c.close()
+        conn.close()
+        postings_file.close()
+        return postings
+
     def retrieve_postings(self, query):
         """Retrieve postings lists with/without positional information"""
         query_literals = process_query(query)
@@ -81,12 +114,14 @@ class DiskIndex(object):
             all_terms = literal.replace('"', '').split()
             all_terms = [normalize.query_normalize(term) for term in all_terms]
             all_terms = set(all_terms)
+            positions = False
+            if len(all_terms) > 1:
+                positions = True
             for subliteral in all_terms:
                 if subliteral not in index:
                     index[subliteral] = []
                     c.execute("SELECT * FROM vocabtable WHERE term=?", (subliteral,))
-                    row = c.fetchall()[0]
-                    if len(row) > 0:
+                    for row in c:
                         posting_position = row[1]
                         postings_file.seek(posting_position, 0)
                         number_docs_bytes = postings_file.read(4)
@@ -104,7 +139,8 @@ class DiskIndex(object):
                                 position_bytes = postings_file.read(4)
                                 position = int.from_bytes(position_bytes, byteorder='big')
                                 doc_positions.append(position)
-                            current_posting.append(doc_positions)
+                            if positions:
+                                current_posting.append(doc_positions)
                             index[subliteral].append(current_posting)
 
         postings_file.close()
@@ -152,31 +188,31 @@ class DiskIndex(object):
 
 
 if __name__ == "__main__":
-    # indexfile = open('bin/indexes', 'rb')
-    # indexes = pickle.load(indexfile)
-    # doc_id_files = {}
-    # docs_dir = 'data/documents'
-    # docs = []
-    # file_contents = {}
-    # id = 0
-    # for root,dirs,files in os.walk(docs_dir):
-    #     files = sorted(files)
-    #     for file in files:
-    #         doc_id_files[id] = file
-    #         id += 1
-    #         with open(os.path.join(docs_dir, file), 'r') as json_data:
-    #             content = json.load(json_data)
-    #             docs.append(content['body'])
-    #             file_contents[file] = {'body': content['body'],
-    #                                     'title': content['title'],
-    #                                     'url': content['url']}
-    # index_writer = IndexWriter()
-    # index_writer.build_index(docs)
+    indexfile = open('bin/indexes', 'rb')
+    indexes = pickle.load(indexfile)
+    doc_id_files = {}
+    docs_dir = 'data/documents'
+    docs = []
+    file_contents = {}
+    id = 0
+    for root,dirs,files in os.walk(docs_dir):
+        files = sorted(files)
+        for file in files:
+            doc_id_files[id] = file
+            id += 1
+            with open(os.path.join(docs_dir, file), 'r') as json_data:
+                content = json.load(json_data)
+                docs.append(content['body'])
+                file_contents[file] = {'body': content['body'],
+                                        'title': content['title'],
+                                        'url': content['url']}
+    index_writer = IndexWriter()
+    index_writer.build_index(docs)
 
-    query = "/'a gateway to the wilderness/'"
-    disk_index = DiskIndex(path='bin/')
-    vocab = disk_index.get_vocab()
+    # query = "/'a gateway to the wilderness/'"
+    # disk_index = DiskIndex(path='bin/')
+    # vocab = disk_index.get_vocab()
     # print(len(vocab))
-    temp_index = disk_index.retrieve_postings(query)
-    query_results = disk_index.query_search(query, temp_index)
-    print(len(query_results))
+    # temp_index = disk_index.retrieve_postings(query)
+    # query_results = disk_index.query_search(query, temp_index)
+    # print(len(query_results))

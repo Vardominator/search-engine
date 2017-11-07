@@ -1,8 +1,9 @@
-"""Unit Tests for indexing file"""
+"""Unit Tests for memoryindex file"""
 import os
 import json
 import collections
 import memoryindex
+from unittest.mock import patch, mock_open
 
 def process_documents():
     """Helper function to pre-process documents"""
@@ -21,38 +22,39 @@ def process_documents():
 docs = process_documents()
 
 TRUE_INDEX = {
-              "test":    [indexing.PositionalPosting(0,[3]),
-                          indexing.PositionalPosting(1,[1]),
-                          indexing.PositionalPosting(3,[0, 1, 2, 3, 4]),
-                          indexing.PositionalPosting(4,[1])],
-              "document":[indexing.PositionalPosting(0,[4]),
-                          indexing.PositionalPosting(1,[2]),
-                          indexing.PositionalPosting(4,[0])],
-              "here":    [indexing.PositionalPosting(1,[4]),
-                          indexing.PositionalPosting(2,[0]),
-                          indexing.PositionalPosting(4,[3])],
-              "we":      [indexing.PositionalPosting(2,[1])],
-              "go":      [indexing.PositionalPosting(2,[2])],
-              "goe":     [indexing.PositionalPosting(4,[2])],
-              "anoth":   [indexing.PositionalPosting(1,[0])],
-              "third":   [indexing.PositionalPosting(2,[4])],
-              "this":    [indexing.PositionalPosting(0,[0])],
-              "is":      [indexing.PositionalPosting(0,[1]),
-                          indexing.PositionalPosting(1,[3])],
-              "a":       [indexing.PositionalPosting(0,[2]),
-                          indexing.PositionalPosting(2,[3])],
-              "one":     [indexing.PositionalPosting(2,[5])]
+              "test":    [memoryindex.PositionalPosting(0,[3]),
+                          memoryindex.PositionalPosting(1,[1]),
+                          memoryindex.PositionalPosting(3,[0, 1, 2, 3, 4]),
+                          memoryindex.PositionalPosting(4,[1])],
+              "document":[memoryindex.PositionalPosting(0,[4]),
+                          memoryindex.PositionalPosting(1,[2]),
+                          memoryindex.PositionalPosting(4,[0])],
+              "here":    [memoryindex.PositionalPosting(1,[4]),
+                          memoryindex.PositionalPosting(2,[0]),
+                          memoryindex.PositionalPosting(4,[3])],
+              "we":      [memoryindex.PositionalPosting(2,[1])],
+              "go":      [memoryindex.PositionalPosting(2,[2])],
+              "goe":     [memoryindex.PositionalPosting(4,[2])],
+              "anoth":   [memoryindex.PositionalPosting(1,[0])],
+              "third":   [memoryindex.PositionalPosting(2,[4])],
+              "this":    [memoryindex.PositionalPosting(0,[0])],
+              "is":      [memoryindex.PositionalPosting(0,[1]),
+                          memoryindex.PositionalPosting(1,[3])],
+              "a":       [memoryindex.PositionalPosting(0,[2]),
+                          memoryindex.PositionalPosting(2,[3])],
+              "one":     [memoryindex.PositionalPosting(2,[5])]
              }
 TRUE_INDEX = collections.OrderedDict(sorted(TRUE_INDEX.items(), key=lambda t:t[0]))
 
-index = indexing.create_index(docs)[0]
+with patch("builtins.open", mock_open()) as mock_file:
+    index = memoryindex.create_index(docs)[0]
 
 def test_index_has_all_keys():
     """Checks to make sure the index has the right number of keys"""
     assert(set(index.keys()) == set(TRUE_INDEX.keys()))
 
 def test_index_has_all_postings():
-    """Checks each word in the index to see if it has the right 
+    """Checks each word in the index to see if it has the right
        number of documents"""
     for word in index.keys():
         assert len(index[word]) == len(TRUE_INDEX[word])

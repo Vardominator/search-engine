@@ -25,29 +25,31 @@ class QueryProcessor(object):
     def query(self, query):
         index = self.disk_index.retrieve_postings(query)
         if self.ranked_flag:
-            return self.ranked_query(query, self.k_docs, index)
+            return self.ranked_query(query, self.k_docs)
         return self.boolean_query(query, index)
 
     def set_ranked_flag(self, setting):
         self.ranked_flag = setting
 
-    @staticmethod
-    def ranked_query(query, k, index):
+    def ranked_query(self, query, k):
         """Returns the k most relevant documents from the corpus for a query,
         using the "term at a time" algorithm"""
         A = defaultdict(int)
         heap = []
         query = [normalize.query_normalize(word) for word in query.split()]
         for term in query:
-            if term in index.keys():
-                wqt = math.log(1 + len(index)/len(index[term]))
-                for posting in index[term]:
-                    wdt = 1 + math.log(posting[1])
-                    A[posting[0]] += wdt * wqt
+            postings = self.disk_index.get_postings(term)
+            wqt = math.log(1 + len(postings)/len(postings))
+            for posting in postings:
+                print(posting)
+                wdt = 1 + math.log(posting[1])
+                A[posting[0]] += wdt * wqt
         with open('bin/docWeights.bin', 'rb') as f:
             for doc, score in A.items():
                 f.seek(8*(doc))
-                ld = struct.unpack('d', f.read(8))
+                length = f.read(8)
+                print(length)
+                ld = struct.unpack('d', length)
                 heapq.heappush(heap, (-score/ld[0], doc))
         return [(key, -value) for value, key in heapq.nsmallest(k, heap)]
 
@@ -60,7 +62,7 @@ class QueryProcessor(object):
             for subliterals in queries:
                 if '*' in subliterals:
                     gram_query = self.wildcard_query(subliterals.lower())
-                    docs_with_all_queries.append(list(self.boolean_query(gram_query, index)))
+                    docs_with_all_queries.append(list(self.query(gram_query)))
                     continue
                 subliterals = subliterals.split()
                 subliterals = [normalize.query_normalize(term) for term in subliterals]
