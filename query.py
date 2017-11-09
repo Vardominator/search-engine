@@ -15,12 +15,12 @@ from diskindex import DiskIndex
 
 class QueryProcessor(object):
 
-    def __init__(self, path='bin/'):
+    def __init__(self, path='bin/', num_docs=0):
         with open('{}kgram.bin'.format(path), 'rb') as f:
             self.kgram_index = pickle.load(f)
         self.disk_index = DiskIndex(path)
         self.k_docs = 10
-        self.vocab_length = len(self.disk_index.get_vocab())
+        self.num_docs = num_docs
 
     def query(self, query, ranked_flag):
         if ranked_flag:
@@ -40,7 +40,7 @@ class QueryProcessor(object):
         for term in query:
             postings = self.disk_index.get_postings(term)
             if postings:
-                wqt = math.log(1 + self.vocab_length/len(postings))
+                wqt = math.log(1 + self.num_docs/len(postings))
                 for posting in postings:
                     wdt = 1 + math.log(posting[1])
                     A[posting[0]] += wdt * wqt

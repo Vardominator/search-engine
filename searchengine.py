@@ -48,7 +48,7 @@ def buildindex():
             indexwriter = IndexWriter()
             indexwriter.build_index(docs)
 
-        queryprocessor = QueryProcessor()
+        queryprocessor = QueryProcessor(num_docs=len(files))
         diskindex = queryprocessor.disk_index
         vocab = diskindex.get_vocab()
 
