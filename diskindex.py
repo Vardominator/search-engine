@@ -9,7 +9,6 @@ from operator import itemgetter
 import collections
 
 import normalize
-from queryprocessing import process_query
 import memoryindex
 
 class IndexWriter(object):
@@ -104,9 +103,11 @@ class DiskIndex(object):
         postings_file.close()
         return postings
 
-    def retrieve_postings(self, query):
+    def retrieve_postings(self, query_literals):
         """Retrieve postings lists with/without positional information"""
-        query_literals = process_query(query)
+        positions = False
+        if any('\"' in lit for lit in query_literals):
+            positions = True
         postings_file = open('{}postings.bin'.format(self.path), 'rb')
         conn = sqlite3.connect('{}vocabtable.db'.format(self.path))
         c = conn.cursor()
@@ -115,9 +116,6 @@ class DiskIndex(object):
             all_terms = literal.replace('"', '').split()
             all_terms = [normalize.query_normalize(term) for term in all_terms]
             all_terms = set(all_terms)
-            positions = False
-            if len(all_terms) > 1:
-                positions = True
             for subliteral in all_terms:
                 if subliteral not in index:
                     index[subliteral] = []
@@ -147,37 +145,6 @@ class DiskIndex(object):
         postings_file.close()
         conn.close()
         return index
-
-    def query_search(self, query, index):
-        """Query the temporary in-memory index"""
-        query_literals = process_query(query)
-        success_doc_ids = []
-        for literal in query_literals:
-            queries = shlex.split(literal)
-            docs_with_all_queries = []
-            for subliterals in queries:
-                subliterals = subliterals.split()
-                subliterals = [normalize.query_normalize(term) for term in subliterals]
-                combined_postings_lists = list(chain.from_iterable([index[subliteral] for subliteral in subliterals]))
-                combined_postings_lists = sorted(combined_postings_lists, key=lambda t:t[0])
-                docs_with_current_query = []
-                for key,doc_postings in groupby(combined_postings_lists, itemgetter(0)):
-                    doc_postings = list(doc_postings)
-                    if len(subliterals) > 1:
-                        if len(doc_postings) == len(subliterals):
-                            subliteral_found = True
-                            postings = [x[2] for x in doc_postings]
-                            for i in range(len(postings)):
-                                postings[i] = [posting - i for posting in postings[i]]
-                            results = set.intersection(*map(set, postings))
-                            if len(results) > 0:
-                                docs_with_current_query.append(doc_postings[0][0])
-                    else:
-                        docs_with_current_query.append(doc_postings[0][0])
-                docs_with_all_queries.append(docs_with_current_query)
-            ids_intersect = list(set.intersection(*map(set, docs_with_all_queries)))
-            success_doc_ids.extend(ids_intersect)
-        return sorted(set(success_doc_ids))
 
     def get_vocab(self):
         conn = sqlite3.connect('{}vocabtable.db'.format(self.path))

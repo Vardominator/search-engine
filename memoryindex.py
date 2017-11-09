@@ -3,7 +3,6 @@ import collections
 import shlex
 import json
 import normalize
-import queryprocessing
 import struct
 from math import sqrt, log
 from kgram import KGramIndex

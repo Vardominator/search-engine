@@ -4,7 +4,6 @@ import json
 import os
 import time
 import indexing
-import queryprocessing
 import normalize
 from diskindex import *
 from query import *

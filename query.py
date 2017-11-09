@@ -21,11 +21,12 @@ class QueryProcessor(object):
         self.disk_index = DiskIndex(path)
         self.k_docs = 10
         self.num_docs = num_docs
+        self.path = path
 
-    def query(self, query, ranked_flag):
+    def query(self, query, ranked_flag=False):
         if ranked_flag:
             return self.ranked_query(query, self.k_docs)
-        index = self.disk_index.retrieve_postings(query)
+        index = self.disk_index.retrieve_postings(self.process_query(query))
         return self.boolean_query(query, index)
 
     def check_spelling(self, query, vocab):
@@ -44,7 +45,7 @@ class QueryProcessor(object):
                 for posting in postings:
                     wdt = 1 + math.log(posting[1])
                     A[posting[0]] += wdt * wqt
-        with open('bin/docWeights.bin', 'rb') as f:
+        with open('{}docWeights.bin'.format(self.path), 'rb') as f:
             for doc, score in A.items():
                 f.seek(8*(doc))
                 length = f.read(8)
