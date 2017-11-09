@@ -3,7 +3,6 @@ from flask import make_response
 import json
 import os
 import time
-import indexing
 import normalize
 from diskindex import *
 from query import *
@@ -56,7 +55,6 @@ def buildindex():
         app.config['vocab'] = vocab
         app.config['file_contents'] = file_contents
         app.config['doc_id_files'] = doc_id_files
-
         return json.dumps({
                             'files': files,
                             'doc_count': len(files),
