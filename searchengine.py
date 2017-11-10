@@ -104,13 +104,13 @@ def query():
             relevant_files.append(file)
             relevant_contents[file] = file_contents[file]
 
-        print(spell_corrected)
         return json.dumps({
                             'doc_ids': search_results,
                             'files': relevant_files,
                             'contents': relevant_contents,
                             'ranked': ranked,
-                            'scores': scores
+                            'scores': scores,
+                            'spell_corrected': spell_corrected
                           })
 
 

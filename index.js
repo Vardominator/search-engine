@@ -46,7 +46,8 @@ $(document).ready(function(){
     $("#query").change(function(e){
         var queryInput = $('#query').val();
         var ranked = $("#ranked").hasClass('active')
-
+        $("#documents_found").text("")
+        
         if(queryInput.includes(":stem")){
             var term = queryInput.replace(":stem", "").trim()
             $.ajax({
@@ -71,6 +72,20 @@ $(document).ready(function(){
         $('#selected_document_body').text("");
         
     });
+
+    // HANDLE CORRECTED QUERY CLICK
+    $("#correct_query_anchor").click(function(e){
+        $("#spell_correction").hide()
+        $('#retrieve_documents_loader').show();
+        var ranked = $("#ranked").hasClass('active')
+        var queryInput = $('#corrected_query').text();
+        $.ajax({
+            type: "POST",
+            url: "http://127.0.0.1:5000/query",
+            data : {query: queryInput, rankedRetrieval:ranked},
+            success: buildRelevantList
+        });
+    })
 
     // HANDLE MODE SWITCH
     $("#boolean").click(function(e){
@@ -148,13 +163,17 @@ $(document).ready(function(){
             $('#selected_document_title').text("Document Scores");
             var scores = ""
             $.each(res.scores, function(index, score){
-                console.log(score)
                 scores += score
                 scores += '<br>'
             })
             $('#selected_document_body').append(scores);
         }
-
+        if(res.spell_corrected != null){
+            console.log(res.spell_corrected)
+            $('#corrected_query').text("")
+            $('#corrected_query').append(res.spell_corrected)
+            $('#spell_correction').show()
+        }
         $('#retrieve_documents_loader').hide();
     }
 

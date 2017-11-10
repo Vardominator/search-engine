@@ -90,7 +90,6 @@ class QueryProcessor(object):
             if docs_with_all_queries:
                 ids_intersect = list(set.intersection(*map(set, docs_with_all_queries)))
                 success_doc_ids.extend(ids_intersect)
-        # print(success_doc_ids)
         return sorted(set(success_doc_ids))
 
     def wildcard_query(self, query):

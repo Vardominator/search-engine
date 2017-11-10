@@ -5,7 +5,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Semantic UI Sandbox</title>
+    <title>Search Engine</title>
     <script
       src="https://code.jquery.com/jquery-3.1.1.min.js"
       integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
@@ -100,6 +100,8 @@
         <input id="query" type="text" placeholder="Query documents...">
         <i class="search icon"></i>
     </div>
+
+    <h4 id="spell_correction" class="ui header" style="display:none;">Search for <a href="#" id="correct_query_anchor"><u id="corrected_query">something better</u></a></h4>
 
     <div class="ui active inverted dimmer" id="retrieve_documents_loader" style="display:none">
       <div class="ui large text loader">Retrieving Documents</div>
