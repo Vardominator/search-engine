@@ -80,13 +80,16 @@ class KGramIndex(object):
             candidates |= set(self.get_words(gram))
         # ranked = sorted(candidates, key=lambda x: -self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(x)))
         ranked = {word for word in candidates if self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(word))>threshold}
-        return min([(word,self.edit_dist(qword, word)) for word in ranked], key=itemgetter(1))[0]
+        if ranked:
+            return min([(word,self.edit_dist(qword, word)) for word in ranked], key=itemgetter(1))[0]
 
     def spelling_correction(self, query, vocab):
         """Returns a spelling-corrected query if necessary"""
         terms = re.findall("\w+", query)
         new_terms = [term if remove_special_characters(term) in vocab else self.find_spelling_candidate(term, THRESHOLD) for term in terms]
         if not terms == new_terms:
+            if None in new_terms:
+                return None
             for term, new in zip(terms, new_terms):
                 if term != new:
                     query = query.replace(term, new)

@@ -1,6 +1,7 @@
 """Unit Tests for queries"""
 import query
 import collections
+import math
 
 Q = query.QueryProcessor(path='test/bin/', num_docs=5)
 
@@ -70,7 +71,6 @@ def test_doc_retrieval_ranked_many():
     res = {i[0] for i in res}
     assert (ans == res)
 
-import math
 def test_most_relevant_first():
     """Manually calculating the high score for a term and checking
        that it is the first result"""
@@ -81,3 +81,52 @@ def test_most_relevant_first():
     res = Q.query(query, ranked_flag=True)
     score = wqt * wdt / len_doc
     assert res[0] == (3, score)
+
+## KGram Queries
+def test_basic_kgram_query():
+    query = "thi*"
+    ans = {0, 2}
+    assert set(Q.query(query)) == ans
+
+def test_star_at_front_kgram():
+    query = "*e"
+    ans = {1, 2, 4}
+    assert set(Q.query(query)) == ans
+
+def test_multiple_stars():
+    query = "*cu*en*"
+    ans = {0, 1, 4}
+    assert set(Q.query(query)) == ans
+
+def test_with_boolean():
+    query = "docu* here"
+    ans = {1, 4}
+    assert set(Q.query(query)) == ans
+
+def test_not_in_vocab():
+    query = "teadjfkafadfadfcvbczz*"
+    assert Q.query(query) == []
+
+VOCAB = {'test', 'document', 'here', 'we', 'go', 'goe', 'anoth',
+             'third', 'this', 'is', 'a', 'one'}
+
+## Spelling Corrections
+def test_spelling_correction_on_correct_query():
+    query = "test"
+    assert Q.check_spelling(query, VOCAB) is None
+
+def test_spelling_correction_one_word():
+    query = "tesp"
+    assert Q.check_spelling(query, VOCAB) == "test"
+
+def test_spelling_correction_multiple_words():
+    query = "test documant thard is"
+    assert Q.check_spelling(query, VOCAB) == "test document third is"
+
+def test_spelling_boolean_symbols():
+    query = '\"tesp documant herr\"+this'
+    assert Q.check_spelling(query, VOCAB) == '\"test document here\"+this'
+
+def test_spelling_weird_word():
+    query = "BV*%#@QDJZ"
+    assert Q.check_spelling(query, VOCAB) is None

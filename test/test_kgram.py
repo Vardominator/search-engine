@@ -49,3 +49,57 @@ def test_get_words_handles_no_key():
     """Tests that no issues raised when calling missing key"""
     kgram_test = kgram.KGramIndex(3)
     kgram_test.get_words('not in index')
+
+def test_get_kgrams():
+    word = "word"
+    ans = {'$', 'w', 'o', 'r', 'd', '$w', 'wo', 'or', 'rd', 'd$',
+           '$wo', 'wor', 'ord', 'rd$'}
+    kgram_test = kgram.KGramIndex(3)
+    assert kgram_test.get_kgrams(word) == ans
+
+def test_jacard():
+    kgram_test = kgram.KGramIndex(3)
+    word = kgram_test.get_kgrams("word")
+    other = kgram_test.get_kgrams("ward")
+    # Manual calculation
+    print(word.intersection(other))
+    print(word.union(other))
+    intersec = 8
+    w_gram = 14
+    a_gram = 14
+    ans = intersec / (14 + 14 - intersec)
+    assert kgram_test.calculate_jacard_coeff(word, other) == ans
+
+def test_edit_dist():
+    word = "word"
+    other = "wart"
+    assert kgram.KGramIndex.edit_dist(word, other) == 2
+
+def test_find_spelling_candidate():
+    word = "wort"
+    vocab = ['word', 'ward', 'bar']
+    threshold = .3
+    kgram_test = kgram.KGramIndex(3)
+    kgram_test.add_to_index(vocab)
+    assert kgram_test.find_spelling_candidate(word, threshold) == 'word'
+
+def test_spelling_correction_does_nothing_when_valid():
+    query = 'test query'
+    vocab = ['test', 'query']
+    kgram_test = kgram.KGramIndex(3)
+    kgram_test.add_to_index(vocab)
+    assert kgram_test.spelling_correction(query, vocab) is None
+
+def test_spelling_correction_one_word():
+    query = 'tesp'
+    vocab = ['test', 'query']
+    kgram_test = kgram.KGramIndex(3)
+    kgram_test.add_to_index(vocab)
+    assert kgram_test.spelling_correction(query, vocab) == 'test'
+
+def test_spelling_correction_complex():
+    query = '\"tesp query\"'
+    vocab = ['test', 'query']
+    kgram_test = kgram.KGramIndex(3)
+    kgram_test.add_to_index(vocab)
+    assert kgram_test.spelling_correction(query, vocab) == '\"test query\"'

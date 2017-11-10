@@ -64,7 +64,9 @@ class QueryProcessor(object):
                     gram_query = self.wildcard_query(subliterals.lower())
                     gram_query = '+'.join(gram_query)
                     print(gram_query)
-                    docs_with_all_queries.append(list(self.query(gram_query, False)))
+                    res = self.query(gram_query, False)
+                    if res:
+                        docs_with_all_queries.append(list(self.query(gram_query, False)))
                     continue
                 subliterals = subliterals.split()
                 subliterals = [normalize.query_normalize(term) for term in subliterals]
@@ -85,8 +87,9 @@ class QueryProcessor(object):
                     else:
                         docs_with_current_query.append(doc_postings[0][0])
                 docs_with_all_queries.append(docs_with_current_query)
-            ids_intersect = list(set.intersection(*map(set, docs_with_all_queries)))
-            success_doc_ids.extend(ids_intersect)
+            if docs_with_all_queries:
+                ids_intersect = list(set.intersection(*map(set, docs_with_all_queries)))
+                success_doc_ids.extend(ids_intersect)
         # print(success_doc_ids)
         return sorted(set(success_doc_ids))
 
