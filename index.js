@@ -85,6 +85,7 @@ $(document).ready(function(){
             data : {query: queryInput, rankedRetrieval:ranked},
             success: buildRelevantList
         });
+        $("#last_query").text(queryInput);
     })
 
     // HANDLE MODE SWITCH
