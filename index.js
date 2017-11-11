@@ -44,6 +44,7 @@ $(document).ready(function(){
 
     // EXECUTE QUERY
     $("#query").change(function(e){
+        $("#spell_correction").hide()
         var queryInput = $('#query').val();
         var ranked = $("#ranked").hasClass('active')
         $("#documents_found").text("")
