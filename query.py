@@ -1,9 +1,10 @@
-import shlex
-import sys
 import heapq
 import math
 import pickle
+import shlex
 import struct
+import sys
+import re
 from collections import defaultdict
 from itertools import chain, groupby
 from operator import itemgetter
@@ -12,6 +13,7 @@ import normalize
 from kgram import KGramIndex
 from diskindex import DiskIndex
 
+THRESHOLD = .31
 
 class QueryProcessor(object):
 
@@ -30,7 +32,20 @@ class QueryProcessor(object):
         return self.boolean_query(query, index)
 
     def check_spelling(self, query, vocab):
-        return self.kgram_index.spelling_correction(query, vocab)
+        terms = re.findall("\w+", query)
+        new_terms = [term if normalize.remove_special_characters(term) in vocab else self.select_best_spelling(term) for term in terms]
+        if not terms == new_terms:
+            if None in new_terms:
+                return None
+            for term, new in zip(terms, new_terms):
+                if term != new:
+                    query = query.replace(term, new)
+            return query
+
+    def select_best_spelling(self, term):
+        candidates = self.kgram_index.find_spelling_candidates(term, THRESHOLD)
+        frequencies = self.disk_index.get_doc_frequency(candidates)
+        return candidates[frequencies.index(max(frequencies))]
 
     def ranked_query(self, query, k):
         """Returns the k most relevant documents from the corpus for a query,

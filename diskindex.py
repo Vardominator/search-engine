@@ -70,6 +70,27 @@ class DiskIndex(object):
     def __init__(self, path='bin/'):
         self.path = path
 
+    def get_doc_frequency(self, terms):
+        postings_file = open('{}postings.bin'.format(self.path), 'rb')
+        conn = sqlite3.connect('{}vocabtable.db'.format(self.path))
+        c = conn.cursor()
+        frequencies = list()
+        for term in terms:
+            term = normalize.query_normalize(term)
+            c.execute("SELECT * FROM vocabtable WHERE term=?",(term,))
+            row = c.fetchone()
+            number_docs = 0
+            if row:
+                posting_position = row[1]
+                postings_file.seek(posting_position, 0)
+                number_docs_bytes = postings_file.read(4)
+                number_docs = int.from_bytes(number_docs_bytes, byteorder='big')
+            frequencies.append(number_docs)
+        c.close()
+        conn.close()
+        postings_file.close()
+        return frequencies
+
     def get_postings(self, term, positions=False):
         postings_file = open('{}postings.bin'.format(self.path), 'rb')
         conn = sqlite3.connect('{}vocabtable.db'.format(self.path))
