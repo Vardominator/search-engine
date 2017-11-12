@@ -132,6 +132,7 @@ $(document).ready(function(){
     function buildRelevantList(response){
         var res = $.parseJSON(response);
         $("#relevant_list").empty();
+        $("#selected_document_body").empty();
         if(res.files.length == 0){
             $("#selected_document_body").text("No documents found.");
         }else{
