@@ -84,26 +84,31 @@ def test_most_relevant_first():
 
 ## KGram Queries
 def test_basic_kgram_query():
+    """Testing basic end-of-word wildcard"""
     query = "thi*"
     ans = {0, 2}
     assert set(Q.query(query)) == ans
 
 def test_star_at_front_kgram():
+    """Testing basic start-of-word wildcard"""
     query = "*e"
     ans = {1, 2, 4}
     assert set(Q.query(query)) == ans
 
 def test_multiple_stars():
+    """Testing multiple wildcards"""
     query = "*cu*en*"
     ans = {0, 1, 4}
     assert set(Q.query(query)) == ans
 
 def test_with_boolean():
+    """Testing wildcard in a boolean"""
     query = "docu* here"
     ans = {1, 4}
     assert set(Q.query(query)) == ans
 
 def test_not_in_vocab():
+    """Testing query handles words not in corpus"""
     query = "teadjfkafadfadfcvbczz*"
     assert Q.query(query) == []
 
@@ -112,21 +117,26 @@ VOCAB = {'test', 'document', 'here', 'we', 'go', 'goe', 'anoth',
 
 ## Spelling Corrections
 def test_spelling_correction_on_correct_query():
+    """Testing spelling correction does nothing on correct query"""
     query = "test"
     assert Q.check_spelling(query, VOCAB) is None
 
 def test_spelling_correction_one_word():
+    """Testing spelling correction on single misspelled word"""
     query = "tesp"
     assert Q.check_spelling(query, VOCAB) == "test"
 
 def test_spelling_correction_multiple_words():
+    """Testing spelling correction on multiple words"""
     query = "test documant thard is"
     assert Q.check_spelling(query, VOCAB) == "test document third is"
 
 def test_spelling_boolean_symbols():
+    """Testing spelling correction on multiple words with boolean symbols"""
     query = '\"tesp documant herr\"+this'
     assert Q.check_spelling(query, VOCAB) == '\"test document here\"+this'
 
 def test_spelling_weird_word():
+    """Test spelling correction can handle impossible words"""
     query = "BV*%#@QDJZ"
     assert Q.check_spelling(query, VOCAB) is None

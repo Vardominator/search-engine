@@ -71,6 +71,7 @@ class DiskIndex(object):
         self.path = path
 
     def get_doc_frequency(self, terms):
+        """Returns the document frequency of a sequence of terms"""
         postings_file = open('{}postings.bin'.format(self.path), 'rb')
         conn = sqlite3.connect('{}vocabtable.db'.format(self.path))
         c = conn.cursor()
@@ -92,6 +93,8 @@ class DiskIndex(object):
         return frequencies
 
     def get_postings(self, term, positions=False):
+        """Returns postings for a single term in the index, with or
+           without positional information"""
         postings_file = open('{}postings.bin'.format(self.path), 'rb')
         conn = sqlite3.connect('{}vocabtable.db'.format(self.path))
         c = conn.cursor()

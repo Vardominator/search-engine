@@ -58,6 +58,7 @@ def test_get_kgrams():
     assert kgram_test.get_kgrams(word) == ans
 
 def test_jacard():
+    """Manually calculating jacard and comparing with results of function"""
     kgram_test = kgram.KGramIndex(3)
     word = kgram_test.get_kgrams("word")
     other = kgram_test.get_kgrams("ward")
@@ -71,35 +72,41 @@ def test_jacard():
     assert kgram_test.calculate_jacard_coeff(word, other) == ans
 
 def test_edit_dist():
+    """Checking edit distance between two words"""
     word = "word"
     other = "wart"
     assert kgram.KGramIndex.edit_dist(word, other) == 2
 
+def test_all_min_edits():
+    """Checking all terms with minimum edit distance returned"""
+    word = "iest"
+    vocab = ['west', 'best', 'bar']
+    kgram_test = kgram.KGramIndex(3)
+    assert set(kgram_test.all_min_edits(vocab, word)) == {'west', 'best'}
+
 def test_find_spelling_candidate():
+    """Checking correct result for one spelling correction"""
     word = "wort"
     vocab = ['word', 'ward', 'bar']
     threshold = .3
     kgram_test = kgram.KGramIndex(3)
     kgram_test.add_to_index(vocab)
-    assert kgram_test.find_spelling_candidate(word, threshold) == 'word'
+    assert kgram_test.find_spelling_candidates(word, threshold) == ['word']
 
-def test_spelling_correction_does_nothing_when_valid():
-    query = 'test query'
-    vocab = ['test', 'query']
+def test_find_spelling_two_candidates():
+    """Checking find spelling returns all candidates with min edit distance"""
+    word = "iest"
+    vocab = ['west', 'best', 'bar']
+    thresh = .31
     kgram_test = kgram.KGramIndex(3)
     kgram_test.add_to_index(vocab)
-    assert kgram_test.spelling_correction(query, vocab) is None
+    assert set(kgram_test.find_spelling_candidates(word, thresh)) == {'west', 'best'}
 
-def test_spelling_correction_one_word():
-    query = 'tesp'
-    vocab = ['test', 'query']
+def find_spelling_no_candidates():
+    """Checking find spelling handles impossible words"""
+    word = "fgdaggd"
+    vocab = ['west', 'best', 'bar']
+    thresh = .31
     kgram_test = kgram.KGramIndex(3)
     kgram_test.add_to_index(vocab)
-    assert kgram_test.spelling_correction(query, vocab) == 'test'
-
-def test_spelling_correction_complex():
-    query = '\"tesp query\"'
-    vocab = ['test', 'query']
-    kgram_test = kgram.KGramIndex(3)
-    kgram_test.add_to_index(vocab)
-    assert kgram_test.spelling_correction(query, vocab) == '\"test query\"'
+    assert set(kgram_test.find_spelling_candidates(word, thresh)) == []

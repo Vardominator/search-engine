@@ -1,4 +1,4 @@
-from itertools import chain
+from itertools import chain, groupby
 from operator import itemgetter
 from collections import defaultdict
 import numpy as np
@@ -7,7 +7,6 @@ import re
 
 from normalize import remove_special_characters
 
-THRESHOLD = .31
 
 class KGramIndex(object):
     """KGram Index that builds dictionaries of grams up to the designated
@@ -79,14 +78,29 @@ class KGramIndex(object):
         for gram in query_word_grams:
             candidates |= set(self.get_words(gram))
         # ranked = sorted(candidates, key=lambda x: -self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(x)))
-        ranked = {word for word in candidates if self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(word))>threshold}
+        ranked = [word for word in candidates if self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(word))>threshold]
         if ranked:
-            candidates = [(word,self.edit_dist(qword, word)) for word in ranked]
-            indices = [i for i in range(len(candidates)) if candidates[i][1] == min(candidates, key=itemgetter(1))[1]]
-            return [candidates[i][0] for i in indices]
+            return self.all_min_edits(ranked, qword)
+
+    def all_min_edits(self, items, qword):
+        """Returns each candidate with the minimum edit distance"""
+        min_val = self.edit_dist(qword, items[-1])
+        min_list = []
+        for item in items:
+            map_val = self.edit_dist(qword, item)
+            if map_val > min_val:
+                continue
+            if map_val < min_val:
+                min_val = map_val
+                min_list = [item]
+            else:
+                min_list.append(item)
+        return min_list
 
     @staticmethod
     def calculate_jacard_coeff(qword_grams, tword_grams):
+        """Calculates jacard coefficient using alternate
+           definition of union"""
         n = len(qword_grams.intersection(tword_grams))
         return n / float(len(qword_grams) + len(tword_grams) - n)
 

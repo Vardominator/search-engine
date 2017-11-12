@@ -121,6 +121,12 @@ def test_get_postings_one_term_with_positions():
     disk_index = diskindex.DiskIndex(path=PATH)
     assert disk_index.get_postings(term, positions=True) == [[2, 1, [5]]]
 
+def test_get_postings_term_not_in_index():
+    """Checking correct values returned for a single term from file with positions"""
+    term = "blah"
+    disk_index = diskindex.DiskIndex(path=PATH)
+    assert disk_index.get_postings(term) == []
+
 def test_retrieve_postings_query():
     """Checking correct values returned for a query from file without positions"""
     query = ["a one"]
@@ -133,9 +139,27 @@ def test_retrieve_postings_positional_query():
     disk_index = diskindex.DiskIndex(path=PATH)
     assert disk_index.retrieve_postings(query) == {"a":[[0, 1, [2]], [2, 1, [3]]], "one":[[2, 1, [5]]]}
 
+def test_retrieve_postings_term_not_in_index():
+    """Checking correct values returned for a single term from file with positions"""
+    term = ["blah"]
+    disk_index = diskindex.DiskIndex(path=PATH)
+    assert disk_index.retrieve_postings(term) == {'blah':[]}
+
 def test_vocab_retrieval():
     """Checking whole vocab is retrieved correctly"""
     VOCAB = {'test', 'document', 'here', 'we', 'go', 'goe', 'anoth',
              'third', 'this', 'is', 'a', 'one'}
     disk_index = diskindex.DiskIndex(path=PATH)
     assert set(disk_index.get_vocab()) == VOCAB
+
+def test_doc_frequency():
+    """Checking correct df(t) is returned in order"""
+    words = ['test', 'here']
+    disk_index = diskindex.DiskIndex(path=PATH)
+    assert disk_index.get_doc_frequency(words) == [4, 3]
+
+def test_doc_frequency_word_not_in_index():
+    """Checking frequency defaults to 0 if not in index"""
+    words = ['gabagaool', 'document']
+    disk_index = diskindex.DiskIndex(path=PATH)
+    assert disk_index.get_doc_frequency(words) == [0, 3]

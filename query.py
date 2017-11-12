@@ -13,7 +13,7 @@ import normalize
 from kgram import KGramIndex
 from diskindex import DiskIndex
 
-THRESHOLD = .31
+THRESHOLD = .35
 
 class QueryProcessor(object):
 
@@ -26,12 +26,15 @@ class QueryProcessor(object):
         self.path = path
 
     def query(self, query, ranked_flag=False):
+        """Query interface, returns results of either boolean or ranked queries"""
         if ranked_flag:
             return self.ranked_query(query, self.k_docs)
         index = self.disk_index.retrieve_postings(self.process_query(query))
         return self.boolean_query(query, index)
 
     def check_spelling(self, query, vocab):
+        """Checks each term in query for spelling correction, returns new string
+           if corrections are made"""
         terms = re.findall("\w+", query)
         new_terms = [term if normalize.remove_special_characters(term) in vocab else self.select_best_spelling(term) for term in terms]
         if not terms == new_terms:
@@ -43,7 +46,10 @@ class QueryProcessor(object):
             return query
 
     def select_best_spelling(self, term):
+        """Returns the best spelling candidate based on edit distance and document frequency"""
         candidates = self.kgram_index.find_spelling_candidates(term, THRESHOLD)
+        if not candidates:
+            return None
         frequencies = self.disk_index.get_doc_frequency(candidates)
         return candidates[frequencies.index(max(frequencies))]
 
@@ -69,6 +75,7 @@ class QueryProcessor(object):
         return [(key, -value) for value, key in heapq.nsmallest(k, heap)]
 
     def boolean_query(self, query, index):
+        """Returns the documents that satisfy a boolean query using the index"""
         query_literals = self.process_query(query)
         success_doc_ids = []
         for literal in query_literals:
@@ -76,6 +83,7 @@ class QueryProcessor(object):
             docs_with_all_queries = []
             for subliterals in queries:
                 if '*' in subliterals:
+                    # Recursively call query to pull new index with wildcard terms, and append the results
                     gram_query = self.wildcard_query(subliterals.lower())
                     gram_query = '+'.join(gram_query)
                     print(gram_query)
