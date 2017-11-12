@@ -1,12 +1,7 @@
 import pickle
-import shlex
 import sqlite3
-import os
-import json
-
-from itertools import chain, groupby
-from operator import itemgetter
-import collections
+# import os
+# import json
 
 import normalize
 import memoryindex

@@ -1,6 +1,5 @@
 """Normalization module"""
 import re
-
 import stemming.porter2
 
 

@@ -1,12 +1,6 @@
-from itertools import chain, groupby
-from operator import itemgetter
+from itertools import chain
 from collections import defaultdict
 import numpy as np
-import heapq
-import re
-
-from normalize import remove_special_characters
-
 
 class KGramIndex(object):
     """KGram Index that builds dictionaries of grams up to the designated

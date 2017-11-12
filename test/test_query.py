@@ -1,6 +1,5 @@
 """Unit Tests for queries"""
 import query
-import collections
 import math
 
 Q = query.QueryProcessor(path='test/bin/', num_docs=5)

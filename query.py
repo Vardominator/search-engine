@@ -3,7 +3,6 @@ import math
 import pickle
 import shlex
 import struct
-import sys
 import re
 from collections import defaultdict
 from itertools import chain, groupby
@@ -16,6 +15,9 @@ from diskindex import DiskIndex
 THRESHOLD = .35
 
 class QueryProcessor(object):
+    """Query processing class, creates an interface to on-disk index
+       and kgram index for queries. Supports boolean and ranked queries,
+       and handles spelling corrections using kgram index"""
 
     def __init__(self, path='bin/', num_docs=0):
         with open('{}kgram.bin'.format(path), 'rb') as f:
