@@ -43,35 +43,36 @@ $(document).ready(function(){
     });
 
     // EXECUTE QUERY
-    $("#query").change(function(e){
-        $("#spell_correction").hide()
-        var queryInput = $('#query').val();
-        var ranked = $("#ranked").hasClass('active')
-        $("#documents_found").text("")
-        
-        if(queryInput.includes(":stem")){
-            var term = queryInput.replace(":stem", "").trim()
-            $.ajax({
-                type: "POST",
-                url: "http://127.0.0.1:5000/stem",
-                data : {term: term},
-                success: printTermStem
-            });
-        }else{
-            $('#retrieve_documents_loader').show();
-            $.ajax({
-                type: "POST",
-                url: "http://127.0.0.1:5000/query",
-                data : {query: queryInput, rankedRetrieval:ranked},
-                success: buildRelevantList
-            });
-        }
+    $("#query").keypress(function(e){
+        if(e.which == 13){
+            $("#spell_correction").hide()
+            var queryInput = $('#query').val();
+            var ranked = $("#ranked").hasClass('active')
+            $("#documents_found").text("")
+            
+            if(queryInput.includes(":stem")){
+                var term = queryInput.replace(":stem", "").trim()
+                $.ajax({
+                    type: "POST",
+                    url: "http://127.0.0.1:5000/stem",
+                    data : {term: term},
+                    success: printTermStem
+                });
+            }else{
+                $('#retrieve_documents_loader').show();
+                $.ajax({
+                    type: "POST",
+                    url: "http://127.0.0.1:5000/query",
+                    data : {query: queryInput, rankedRetrieval:ranked},
+                    success: buildRelevantList
+                });
+            }
 
-        $("#last_query").text($("#query").val());
-        $('#query').val("");
-        $('#selected_document_title').text("");
-        $('#selected_document_body').text("");
-        
+            $("#last_query").text($("#query").val());
+            $('#query').val("");
+            $('#selected_document_title').text("");
+            $('#selected_document_body').text("");
+        }
     });
 
     // HANDLE CORRECTED QUERY CLICK
