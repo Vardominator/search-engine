@@ -132,7 +132,7 @@ class DiskIndex(object):
         c = conn.cursor()
         index = {}
         for literal in query_literals:
-            all_terms = literal.replace('"', '').split()
+            all_terms = literal.split()
             all_terms = [normalize.query_normalize(term) for term in all_terms]
             all_terms = set(all_terms)
             for subliteral in all_terms:

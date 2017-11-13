@@ -103,7 +103,7 @@ class QueryProcessor(object):
             except ValueError as e:
                 print(e)
                 print(literal)
-                queries = [literal.replace('\"', "")]
+                queries = [literal]
             docs_with_all_queries = []
             for subliterals in queries:
                 if '*' in subliterals:
