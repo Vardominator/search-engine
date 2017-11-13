@@ -4,7 +4,7 @@ import pickle
 import shlex
 import struct
 import re
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 from itertools import chain, groupby
 from operator import itemgetter
 
@@ -35,16 +35,15 @@ class QueryProcessor(object):
 
     def check_spelling(self, query, vocab, ranked_flag=False):
         """Handles spell-checking for boolean or ranked queries"""
-        if '*' not in query:
-            if ranked_flag:
-                return self.check_spelling_ranked(query, vocab)
-            return self.check_spelling_boolean(query, vocab)
+        if ranked_flag:
+            return self.check_spelling_ranked(query, vocab)
+        return self.check_spelling_boolean(query, vocab)
 
     def check_spelling_boolean(self, query, vocab):
         """Checks each term in query for spelling correction, returns new string
            if corrections are made"""
         terms = re.findall("\w+", query)
-        new_terms = [term if normalize.remove_special_characters(term) in vocab else self.select_best_spelling(term) for term in terms]
+        new_terms = [term if (normalize.remove_special_characters(term) in vocab or '*' in term) else self.select_best_spelling(term) for term in terms]
         if not terms == new_terms:
             if None in new_terms:
                 return None
@@ -56,7 +55,7 @@ class QueryProcessor(object):
     def check_spelling_ranked(self, query, vocab):
         """Faster spell check when symbols are not important"""
         terms = query.split()
-        new_terms = [term if normalize.remove_special_characters(term) in vocab else self.select_best_spelling(term) for term in terms]
+        new_terms = [term if (normalize.remove_special_characters(term) in vocab or '*' in term) else self.select_best_spelling(term) for term in terms]
         if not terms == new_terms:
             if all(new_terms):
                 return " ".join(new_terms)
@@ -92,9 +91,8 @@ class QueryProcessor(object):
 
     def boolean_query(self, query):
         """Returns the documents that satisfy a boolean query using the index"""
-        p_query = self.process_query(query)
-        index = self.disk_index.retrieve_postings(p_query)
-        query_literals = p_query
+        query_literals = self.process_query(query)
+        index = self.disk_index.retrieve_postings(query_literals)
         success_doc_ids = []
         for literal in query_literals:
             # Guard for unmatched " symbols
@@ -106,15 +104,20 @@ class QueryProcessor(object):
                 queries = [literal]
             docs_with_all_queries = []
             for subliterals in queries:
-                if '*' in subliterals:
-                    # Recursively call query to pull new index with wildcard terms, and append the results
-                    gram_query = self.wildcard_query(subliterals.lower())
-                    gram_query = '+'.join(gram_query)
-                    res = self.boolean_query(gram_query)
-                    if res:
-                        docs_with_all_queries.append(list(res))
-                    continue
                 subliterals = subliterals.split()
+                wildcard = False
+                for term in subliterals:
+                    if '*' in term:
+                        # Recursively call query to pull new index with wildcard terms, and append the results
+                        gram_query = self.wildcard_query(term.lower())
+                        gram_query = '+'.join(gram_query)
+                        res = self.boolean_query(gram_query)
+                        if res:
+                            docs_with_all_queries.append(res)
+                        wildcard = True
+                        continue
+                if wildcard:
+                    continue
                 subliterals = [normalize.query_normalize(term) for term in subliterals]
                 combined_postings_lists = list(chain.from_iterable([index[subliteral] for subliteral in subliterals]))
                 combined_postings_lists = sorted(combined_postings_lists, key=lambda t:t[0])
@@ -127,16 +130,21 @@ class QueryProcessor(object):
                             postings = [x[2] for x in doc_postings]
                             for i in range(len(postings)):
                                 postings[i] = [posting - i for posting in postings[i]]
-                            results = self.intersect_lists(postings)
+                            results = postings[0]
+                            for p in postings[1:]:
+                                results = self.intersect_sorted_lists(results, p)
+                            results = list(results)
                             if len(results) > 0:
                                 docs_with_current_query.append(doc_postings[0][0])
                     else:
                         docs_with_current_query.append(doc_postings[0][0])
                 docs_with_all_queries.append(docs_with_current_query)
             if docs_with_all_queries:
-                ids_intersect = self.intersect_lists(docs_with_all_queries)
-                success_doc_ids.extend(ids_intersect)
-        return sorted(list(OrderedDict.fromkeys(success_doc_ids)))
+                ids_intersect = docs_with_all_queries[0]
+                for l in docs_with_all_queries[1:]:
+                    ids_intersect = self.intersect_sorted_lists(ids_intersect, l)
+                success_doc_ids = self.union_sorted_lists(success_doc_ids, ids_intersect)
+        return list(success_doc_ids)
 
     def wildcard_query(self, query):
         """Puts queries in correct form for the kgram index, splits on grams
@@ -146,7 +154,7 @@ class QueryProcessor(object):
         if not query.endswith('*'):
             query = query + '$'
         gram_list = query.split('*')
-        gram_list = filter(None, list(OrderedDict.fromkeys(gram_list)))
+        gram_list = set(filter(None, gram_list))
         return self.kgram_index.get_intersection_grams(gram_list)
 
     @staticmethod
@@ -157,16 +165,62 @@ class QueryProcessor(object):
         return literals
 
     @staticmethod
-    def intersect_lists(lists):
-        intersect = list()
-        first_list = lists[0]
-        for x in first_list:
-            found_all = True
-            for l in lists[1:]:
-                if x not in l:
-                    found_all = False
+    def intersect_sorted_lists(list_one, list_two):
+        """Intersects two sorted lists"""
+        if not (list_one and list_two):
+            return
+        iter_one = iter(list_one)
+        iter_two = iter(list_two)
+        left = next(iter_one)
+        right = next(iter_two)
+        cur = -1
+        while True:
+            try:
+                if left < right:
+                    left = next(iter_one)
+                if right < left:
+                    right = next(iter_two)
+                if right == left:
+                    yield right
+                    right = next(iter_two)
+            except StopIteration:
+                break
+
+    @staticmethod
+    def union_sorted_lists(list_one, list_two):
+        """Combines two sorted lists while removing duplicates"""
+        if not list_one:
+            for a in list_two:
+                yield a
+        if not list_two:
+            for a in list_one:
+                yield a
+        iter_one = iter(list_one)
+        iter_two = iter(list_two)
+        left = next(iter_one)
+        right = next(iter_two)
+        cur = -1
+        while True:
+            if left < right:
+                if left > cur:
+                    cur = left
+                    yield cur
+                try:
+                    left = next(iter_one)
+                except StopIteration:
+                    last = right
+                    iter_one = iter_two
                     break
-            if found_all:
-                intersect.append(x)
-        return intersect
-        
+            else:
+                if right > cur:
+                    cur = right
+                    yield cur
+                try:
+                    right = next(iter_two)
+                except StopIteration:
+                    last = left
+                    break
+        if last > cur:
+            yield last
+        for i in iter_one:
+            yield i
