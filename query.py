@@ -146,7 +146,7 @@ class QueryProcessor(object):
         if not query.endswith('*'):
             query = query + '$'
         gram_list = query.split('*')
-        gram_list = filter(None, list(OrderedDict.fromkeys(success_doc_ids)))
+        gram_list = filter(None, list(OrderedDict.fromkeys(gram_list)))
         return self.kgram_index.get_intersection_grams(gram_list)
 
     @staticmethod
