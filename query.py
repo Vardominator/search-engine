@@ -31,10 +31,15 @@ class QueryProcessor(object):
         """Query interface, returns results of either boolean or ranked queries"""
         if ranked_flag:
             return self.ranked_query(query, self.k_docs)
-        index = self.disk_index.retrieve_postings(self.process_query(query))
-        return self.boolean_query(query, index)
+        return self.boolean_query(query)
 
-    def check_spelling(self, query, vocab):
+    def check_spelling(self, query, vocab, ranked_flag=False):
+        """Handles spell-checking for boolean or ranked queries"""
+        if ranked_flag:
+            return self.check_spelling_ranked(query, vocab)
+        return self.check_spelling_boolean(query, vocab)
+
+    def check_spelling_boolean(self, query, vocab):
         """Checks each term in query for spelling correction, returns new string
            if corrections are made"""
         terms = re.findall("\w+", query)
@@ -46,6 +51,14 @@ class QueryProcessor(object):
                 if term != new:
                     query = query.replace(term, new)
             return query
+
+    def check_spelling_ranked(self, query, vocab):
+        """Faster spell check when symbols are not important"""
+        terms = query.split()
+        new_terms = [term if normalize.remove_special_characters(term) in vocab else self.select_best_spelling(term) for term in terms]
+        if not terms == new_terms:
+            if all(new_terms):
+                return " ".join(new_terms)
 
     def select_best_spelling(self, term):
         """Returns the best spelling candidate based on edit distance and document frequency"""
@@ -76,8 +89,9 @@ class QueryProcessor(object):
                 heapq.heappush(heap, (-score/ld[0], doc))
         return [(key, -value) for value, key in heapq.nsmallest(k, heap)]
 
-    def boolean_query(self, query, index):
+    def boolean_query(self, query):
         """Returns the documents that satisfy a boolean query using the index"""
+        index = self.disk_index.retrieve_postings(self.process_query(query))
         query_literals = self.process_query(query)
         success_doc_ids = []
         for literal in query_literals:
@@ -88,10 +102,9 @@ class QueryProcessor(object):
                     # Recursively call query to pull new index with wildcard terms, and append the results
                     gram_query = self.wildcard_query(subliterals.lower())
                     gram_query = '+'.join(gram_query)
-                    print(gram_query)
-                    res = self.query(gram_query, False)
+                    res = self.boolean_query(gram_query)
                     if res:
-                        docs_with_all_queries.append(list(self.query(gram_query, False)))
+                        docs_with_all_queries.append(list(res))
                     continue
                 subliterals = subliterals.split()
                 subliterals = [normalize.query_normalize(term) for term in subliterals]

@@ -90,7 +90,7 @@ def query():
         relevant_files = []
         relevant_contents = {}
         scores = []
-        spell_corrected = queryprocessor.check_spelling(query, vocab)
+        spell_corrected = queryprocessor.check_spelling(query, vocab, ranked)
 
         for result in search_results:
             if ranked:

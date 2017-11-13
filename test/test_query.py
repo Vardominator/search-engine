@@ -139,3 +139,11 @@ def test_spelling_weird_word():
     """Test spelling correction can handle impossible words"""
     query = "BV*%#@QDJZ"
     assert Q.check_spelling(query, VOCAB) is None
+
+def test_spelling_ranked():
+    query = "test documant herr"
+    assert Q.check_spelling(query, VOCAB, ranked_flag=True) == "test document here"
+
+def test_spelling_ranked_weird_word():
+    query = "test dfkadfkahd"
+    assert Q.check_spelling(query, VOCAB, ranked_flag=True) is None
