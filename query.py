@@ -115,7 +115,6 @@ class QueryProcessor(object):
                         if res:
                             docs_with_all_queries.append(res)
                         wildcard = True
-                        continue
                 if wildcard:
                     continue
                 subliterals = [normalize.query_normalize(term) for term in subliterals]
@@ -192,9 +191,11 @@ class QueryProcessor(object):
         if not list_one:
             for a in list_two:
                 yield a
+            return
         if not list_two:
             for a in list_one:
                 yield a
+            return
         iter_one = iter(list_one)
         iter_two = iter(list_two)
         left = next(iter_one)
