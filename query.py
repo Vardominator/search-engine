@@ -35,9 +35,10 @@ class QueryProcessor(object):
 
     def check_spelling(self, query, vocab, ranked_flag=False):
         """Handles spell-checking for boolean or ranked queries"""
-        if ranked_flag:
-            return self.check_spelling_ranked(query, vocab)
-        return self.check_spelling_boolean(query, vocab)
+        if '*' not in query:
+            if ranked_flag:
+                return self.check_spelling_ranked(query, vocab)
+            return self.check_spelling_boolean(query, vocab)
 
     def check_spelling_boolean(self, query, vocab):
         """Checks each term in query for spelling correction, returns new string
@@ -91,11 +92,18 @@ class QueryProcessor(object):
 
     def boolean_query(self, query):
         """Returns the documents that satisfy a boolean query using the index"""
-        index = self.disk_index.retrieve_postings(self.process_query(query))
-        query_literals = self.process_query(query)
+        p_query = self.process_query(query)
+        index = self.disk_index.retrieve_postings(p_query)
+        query_literals = p_query
         success_doc_ids = []
         for literal in query_literals:
-            queries = shlex.split(literal)
+            # Guard for unmatched " symbols
+            try:
+                queries = shlex.split(literal)
+            except ValueError as e:
+                print(e)
+                print(literal)
+                queries = [literal.replace('\"', "")]
             docs_with_all_queries = []
             for subliterals in queries:
                 if '*' in subliterals:
