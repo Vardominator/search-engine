@@ -4,7 +4,7 @@ import pickle
 import shlex
 import struct
 import re
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from itertools import chain, groupby
 from operator import itemgetter
 
@@ -127,16 +127,16 @@ class QueryProcessor(object):
                             postings = [x[2] for x in doc_postings]
                             for i in range(len(postings)):
                                 postings[i] = [posting - i for posting in postings[i]]
-                            results = set.intersection(*map(set, postings))
+                            results = self.intersect_lists(postings)
                             if len(results) > 0:
                                 docs_with_current_query.append(doc_postings[0][0])
                     else:
                         docs_with_current_query.append(doc_postings[0][0])
                 docs_with_all_queries.append(docs_with_current_query)
             if docs_with_all_queries:
-                ids_intersect = list(set.intersection(*map(set, docs_with_all_queries)))
+                ids_intersect = self.intersect_lists(docs_with_all_queries)
                 success_doc_ids.extend(ids_intersect)
-        return sorted(set(success_doc_ids))
+        return sorted(list(OrderedDict.fromkeys(success_doc_ids)))
 
     def wildcard_query(self, query):
         """Puts queries in correct form for the kgram index, splits on grams
@@ -146,7 +146,7 @@ class QueryProcessor(object):
         if not query.endswith('*'):
             query = query + '$'
         gram_list = query.split('*')
-        gram_list = set(filter(None, gram_list))
+        gram_list = filter(None, list(OrderedDict.fromkeys(success_doc_ids)))
         return self.kgram_index.get_intersection_grams(gram_list)
 
     @staticmethod
@@ -155,3 +155,18 @@ class QueryProcessor(object):
         literals = query.split('+')
         literals = list(map(str.strip, literals))
         return literals
+
+    @staticmethod
+    def intersect_lists(lists):
+        intersect = list()
+        first_list = lists[0]
+        for x in first_list:
+            found_all = True
+            for l in lists[1:]:
+                if x not in l:
+                    found_all = False
+                    break
+            if found_all:
+                intersect.append(x)
+        return intersect
+        
