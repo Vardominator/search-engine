@@ -76,7 +76,7 @@ def test_most_relevant_first():
     query = "test"
     wqt = math.log(1 + 5/4)
     wdt = 1 + math.log(5)
-    len_doc = math.sqrt(1+math.log(5, 2))
+    len_doc = math.sqrt((1+math.log(5))**2)
     res = Q.query(query, ranked_flag=True)
     score = wqt * wdt / len_doc
     assert res[0] == (3, score)
