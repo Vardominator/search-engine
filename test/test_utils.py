@@ -19,6 +19,18 @@ def test_edit_dist():
     other = "wart"
     assert utils.edit_dist(word, other) == 2
 
+def test_edit_dist_empty_word():
+    """Checking edit distance with empty string"""
+    word = "word"
+    other = ""
+    assert utils.edit_dist(word, other) == 4
+
+def test_edit_dist_same_word():
+    """Checking edit distance with identical words"""
+    word = "word"
+    other = "word"
+    assert utils.edit_dist(word, other) == 0
+
 def test_list_intersection():
     """Testing that list intersection handles basic lists"""
     list_one = [1, 3, 5, 7, 9]
@@ -27,9 +39,9 @@ def test_list_intersection():
 
 def test_first_list_short_intersection():
     """Testing that list intersection handles when first list shorter"""
-    list_one = [1, 2]
-    list_two = [2, 4, 5, 6]
-    assert list(utils.intersect_sorted_lists(list_one, list_two)) == [2]
+    list_one = [1, 2, 4]
+    list_two = [2, 4, 5, 6, 9]
+    assert list(utils.intersect_sorted_lists(list_one, list_two)) == [2, 4]
 
 def test_list_intersection_empty():
     """Testing that list intersection handles one empty list"""
