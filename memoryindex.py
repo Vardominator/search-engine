@@ -47,7 +47,7 @@ def create_index(processed_docs, path='bin/'):
                         pos_inv_index[term].append(PositionalPosting(i, [curr_term_position]))
 
             curr_term_position += 1
-        weight = sqrt(sum([1 + log(val, 2) for val in term_map.values()]))
+        weight = sqrt(sum([(1 + log(val))**2 for val in term_map.values()]))
         doc_weights.write(struct.pack("d",weight))
     doc_weights.close()
 
