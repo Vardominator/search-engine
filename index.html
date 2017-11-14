@@ -1,62 +1,70 @@
 <!DOCTYPE html>
-
 <html>
 
-
 <head>
-    <meta charset="utf-8">
-    <title>Search Engine</title>
-    <script
-      src="https://code.jquery.com/jquery-3.1.1.min.js"
-      integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-      crossorigin="anonymous">
+  <meta charset="utf-8">
+  <title>Search Engine</title>
+  <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+    crossorigin="anonymous">
     </script>
-    <link rel="stylesheet" type="text/css" href="semantic/out/semantic.min.css">
-    <script src="semantic/out/semantic.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="semantic/out/semantic.min.css">
+  <script src="semantic/out/semantic.min.js"></script>
 </head>
 
-
 <body>
-
   <div class="ui container">
     <br>
-
     <h1 class="ui huge header">Vardo's & Nick's Bada$$ Search Engine</h1>
-
     <hr>
     <br>
-    
     <div class="ui grid">
-
-      
       <div class="six wide column">
         <div class="ui fluid input focus">
-            <input id="dir_input" type="text" placeholder="Directory...">
+          <input id="dir_input" type="text" placeholder="Directory...">
         </div>
       </div>
-
       <div class="two wide column">
         <div class="ui slider checkbox" id="build_checkbox" style="margin-top:12px; margin-right:5px">
           <input type="checkbox" name="newsletter">
           <label>Build</label>
         </div>
       </div>
-
-
       <div class="four wide column">
         <button id="buildindex_button" class="ui disabled primary fluid button">
           Use Index
         </button>
       </div>
-
       <div class="four wide column">
         <button id="showterms_button" class="ui disabled secondary fluid button">
           Show Terms
         </button>
       </div>
-
     </div>
-
+    <div class="ui active inverted dimmer" id="building_index_loader" style="display:none">
+      <div class="ui large text loader">Loading Index</div>
+    </div>
+    <table class="ui celled padded table">
+      <thead>
+        <tr>
+          <th class="single line center aligned">Document Count</th>
+          <th class="single line center aligned">Terms Extracted</th>
+        </tr>
+        <tbody>
+      </thead>
+      <tr>
+        <td>
+          <h2 id="document_count" class="ui center aligned header">
+            0
+          </h2>
+        </td>
+        <td>
+          <h2 id="term_count" class="ui center aligned header">
+            0
+          </h2>
+        </td>
+      </tr>
+      </tbody>
+    </table>
     <div class="ui grid">
       <div class="sixteen wide column">
         <div class="ui two item stackable tabs menu">
@@ -65,90 +73,54 @@
         </div>
       </div>
     </div>
-
-    <div class="ui active inverted dimmer" id="building_index_loader" style="display:none">
-      <div class="ui large text loader">Loading Index</div>
-    </div>
-
-
-    <table class="ui celled padded table">
-      <thead>
-        <tr>
-          <th class="single line center aligned">Document Count</th>
-          <th class="single line center aligned">Terms Extracted</th>
-        </tr>
-      <tbody>
-      </thead>
-        <tr>
-          <td>
-            <h2 id="document_count" class="ui center aligned header">
-              0
-            </h2>
-          </td>
-          <td>
-            <h2 id="term_count" class="ui center aligned header">
-              0
-            </h2>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
     <br>
-
     <div class="ui icon input fluid">
-        <input id="query" type="text" placeholder="Query documents...">
-        <i class="search icon"></i>
+      <input id="query" type="text" placeholder="Query documents...">
+      <i class="search icon"></i>
     </div>
-
-    <h4 id="spell_correction" class="ui header" style="display:none;">Search for <a href="#" id="correct_query_anchor"><u id="corrected_query">something better</u></a></h4>
-
+    <h4 id="spell_correction" class="ui header" style="display:none;">Search for
+      <a href="#" id="correct_query_anchor">
+        <u id="corrected_query"></u>
+      </a>
+    </h4>
     <div class="ui active inverted dimmer" id="retrieve_documents_loader" style="display:none">
       <div class="ui large text loader">Retrieving Documents</div>
     </div>
-    
     <br><br>
-
     <div class="ui grid" style="height:450px;">
       <div class="eight wide column">
         <div id="relevant_list" class="ui list" style="height:100%;overflow:scroll;">
-
         </div>
       </div>
-
       <div class="eight wide column">
         <div class="ui piled segment" style="height:100%;overflow:scroll;">
           <h4 class="ui header" id="selected_document_title"></h4>
           <p id="selected_document_body"></p>
         </div>
       </div>
-  
     </div>
-
     <table class="ui celled padded table">
-        <thead>
-          <tr>
-            <th class="single line center aligned">Last query</th>
-            <th class="single line center aligned">Documents found</th>
-          </tr>
+      <thead>
+        <tr>
+          <th class="single line center aligned">Last query</th>
+          <th class="single line center aligned">Documents found</th>
+        </tr>
         <tbody>
-        </thead>
-          <tr>
-            <td>
-              <p id="last_query">
-              </p>
-            </td>
-            <td>
-              <p id="documents_found">
-              </p>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
+      </thead>
+      <tr>
+        <td>
+          <p id="last_query">
+          </p>
+        </td>
+        <td>
+          <p id="documents_found">
+          </p>
+        </td>
+      </tr>
+      </tbody>
+    </table>
   </div>
-
-    <script src="index.js"></script>
+  <script src="index.js"></script>
 </body>
 
 </html>

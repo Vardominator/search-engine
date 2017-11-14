@@ -71,7 +71,6 @@ class KGramIndex(object):
         candidates = set()
         for gram in query_word_grams:
             candidates |= set(self.get_words(gram))
-        # ranked = sorted(candidates, key=lambda x: -calculate_jacard_coeff(query_word_grams, self.get_kgrams(x)))
         ranked = [word for word in candidates if calculate_jacard_coeff(query_word_grams, self.get_kgrams(word))>threshold]
         if ranked:
             return self.all_min_edits(ranked, qword)

@@ -4,7 +4,7 @@ from math import sqrt, log
 from normalize import normalize, remove_special_characters
 from kgram import KGramIndex
 
-# VOCABULARY OF
+# VOCABULARY OF INDEX
 VOCAB = set()
 
 class PositionalPosting():

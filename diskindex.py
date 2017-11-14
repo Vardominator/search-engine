@@ -1,7 +1,5 @@
 import pickle
 import sqlite3
-# import os
-# import json
 
 from normalize import query_normalize
 import memoryindex
@@ -173,33 +171,3 @@ class DiskIndex(object):
         conn.close()
         return vocab
 
-
-if __name__ == "__main__":
-    # indexfile = open('bin/indexes', 'rb')
-    # indexes = pickle.load(indexfile)
-    doc_id_files = {}
-    docs_dir = 'data/documents'
-    docs = []
-    file_contents = {}
-    id = 0
-    for root,dirs,files in os.walk(docs_dir):
-        files = sorted(files)
-        for file in files:
-            doc_id_files[id] = file
-            id += 1
-            with open(os.path.join(docs_dir, file), 'r') as json_data:
-                content = json.load(json_data)
-                docs.append(content['body'])
-                file_contents[file] = {'body': content['body'],
-                                        'title': content['title'],
-                                        'url': content['url']}
-    index_writer = IndexWriter()
-    index_writer.build_index(docs)
-
-    # query = "/'a gateway to the wilderness/'"
-    # disk_index = DiskIndex(path='bin/')
-    # vocab = disk_index.get_vocab()
-    # print(len(vocab))
-    # temp_index = disk_index.retrieve_postings(query)
-    # query_results = disk_index.query_search(query, temp_index)
-    # print(len(query_results))

@@ -1,5 +1,4 @@
-from flask import Flask, render_template, redirect, url_for,request
-from flask import make_response
+from flask import Flask, request
 import json
 import os
 from collections import defaultdict
@@ -8,10 +7,6 @@ from normalize import stem
 from query import QueryProcessor
 
 app = Flask(__name__)
-
-pos_index = None
-kgram_index = None
-doc_id_files = {}
 
 @app.route('/test', methods=['GET', 'POST'])
 def home():
@@ -24,6 +19,7 @@ def buildindex():
     if request.method == 'POST':
         docs = []
         file_contents = {}
+        doc_id_files = {}
         docs_dir = request.form['corpus_dir']
         build_str = request.form['build']
         build = True if build_str == 'true' else False
