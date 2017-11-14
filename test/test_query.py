@@ -111,6 +111,36 @@ def test_not_in_vocab():
     query = "teadjfkafadfadfcvbczz*"
     assert Q.query(query) == []
 
+def test_wildcard_ranked_one():
+    """Checking that wildcards work with one term"""
+    query = "*cume*"
+    ans = {0, 1, 4}
+    res = Q.query(query, ranked_flag=True)
+    res = {i[0] for i in res}
+    assert (ans == res)
+
+def test_wildcard_ranked_many():
+    """Checking that wildcards work with terms in sequence"""
+    query = "docu* test a"
+    ans = {0, 1, 2, 3, 4}
+    res = Q.query(query, ranked_flag=True)
+    res = {i[0] for i in res}
+    assert (ans == res)
+
+def test_multiple_answer_wildcard_ranked():
+    """Checking that wildcards returning many terms work"""
+    query = "*s"
+    ans = {0, 1, 4}
+    res = Q.query(query, ranked_flag=True)
+    res = {i[0] for i in res}
+    assert (ans == res)
+
+def test_wildcard_ranked_not_there():
+    """Checking that empty result list is handled"""
+    query = "ooogabb*"
+    res = Q.query(query, ranked_flag=True)
+    assert res == []
+
 VOCAB = {'test', 'document', 'here', 'we', 'go', 'goe', 'anoth',
              'third', 'this', 'is', 'a', 'one'}
 

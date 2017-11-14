@@ -73,8 +73,11 @@ class QueryProcessor(object):
         using the "term at a time" algorithm"""
         A = defaultdict(int)
         heap = []
-        query = [normalize.query_normalize(word) for word in query.split()]
+        query = [word if '*' in word else normalize.query_normalize(word) for word in query.split()]
         for term in query:
+            if '*' in term:
+                query.extend(self.wildcard_query(term))
+                continue
             postings = self.disk_index.get_postings(term)
             if postings:
                 wqt = math.log(1 + self.num_docs/len(postings))
