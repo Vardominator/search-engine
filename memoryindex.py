@@ -1,7 +1,7 @@
 import collections
-import normalize
 import struct
 from math import sqrt, log
+from normalize import normalize, remove_special_characters
 from kgram import KGramIndex
 
 # VOCABULARY OF
@@ -29,9 +29,9 @@ def create_index(processed_docs, path='bin/'):
         curr_term_position = 0
 
         for word in terms:
-            word = normalize.remove_special_characters(word)
+            word = remove_special_characters(word)
             VOCAB.add(word)
-            term_list = normalize.normalize(word)
+            term_list = normalize(word)
 
             for term in term_list:
                 term_map[term] += 1

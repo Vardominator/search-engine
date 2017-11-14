@@ -2,10 +2,10 @@ from flask import Flask, render_template, redirect, url_for,request
 from flask import make_response
 import json
 import os
-import normalize
-from diskindex import *
-from query import QueryProcessor
 from collections import defaultdict
+from diskindex import *
+from normalize import stem
+from query import QueryProcessor
 
 app = Flask(__name__)
 
@@ -116,7 +116,7 @@ def query():
 def stem():
     """Return the stem of the word."""
     if request.method == 'POST':
-        stemmed_term = normalize.stem(request.form['term'])
+        stemmed_term = stem(request.form['term'])
         print(stemmed_term)
         return json.dumps({
                             'term': request.form['term'],

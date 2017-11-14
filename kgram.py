@@ -1,6 +1,6 @@
 from itertools import chain
 from collections import defaultdict
-import numpy as np
+from utils import edit_dist, calculate_jacard_coeff
 
 class KGramIndex(object):
     """KGram Index that builds dictionaries of grams up to the designated
@@ -71,17 +71,17 @@ class KGramIndex(object):
         candidates = set()
         for gram in query_word_grams:
             candidates |= set(self.get_words(gram))
-        # ranked = sorted(candidates, key=lambda x: -self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(x)))
-        ranked = [word for word in candidates if self.calculate_jacard_coeff(query_word_grams, self.get_kgrams(word))>threshold]
+        # ranked = sorted(candidates, key=lambda x: -calculate_jacard_coeff(query_word_grams, self.get_kgrams(x)))
+        ranked = [word for word in candidates if calculate_jacard_coeff(query_word_grams, self.get_kgrams(word))>threshold]
         if ranked:
             return self.all_min_edits(ranked, qword)
 
     def all_min_edits(self, items, qword):
         """Returns each candidate with the minimum edit distance"""
-        min_val = self.edit_dist(qword, items[-1])
+        min_val = edit_dist(qword, items[-1])
         min_list = []
         for item in items:
-            map_val = self.edit_dist(qword, item)
+            map_val = edit_dist(qword, item)
             if map_val > min_val:
                 continue
             if map_val < min_val:
@@ -90,32 +90,3 @@ class KGramIndex(object):
             else:
                 min_list.append(item)
         return min_list
-
-    @staticmethod
-    def calculate_jacard_coeff(qword_grams, tword_grams):
-        """Calculates jacard coefficient using alternate
-           definition of union"""
-        n = len(qword_grams.intersection(tword_grams))
-        return n / float(len(qword_grams) + len(tword_grams) - n)
-
-    @staticmethod
-    def edit_dist(qword, tword):
-        """Calculates the Levenshtein edit distance
-           between two words using Dynamic Programming"""
-        if len(qword) < len(tword):
-            return KGramIndex.edit_dist(tword, qword)
-        if len(tword) == 0:
-            return len(qword)
-        qword = np.array(tuple(qword))
-        tword = np.array(tuple(tword))
-        previous_row = np.arange(tword.size + 1)
-        for s in qword:
-            current_row = previous_row + 1
-            current_row[1:] = np.minimum(
-                    current_row[1:],
-                    np.add(previous_row[:-1], tword != s))
-            current_row[1:] = np.minimum(
-                    current_row[1:],
-                    current_row[0:-1] + 1)
-            previous_row = current_row
-        return previous_row[-1]

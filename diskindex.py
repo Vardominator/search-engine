@@ -3,7 +3,7 @@ import sqlite3
 # import os
 # import json
 
-import normalize
+from normalize import query_normalize
 import memoryindex
 
 class IndexWriter(object):
@@ -72,7 +72,7 @@ class DiskIndex(object):
         c = conn.cursor()
         frequencies = list()
         for term in terms:
-            term = normalize.query_normalize(term)
+            term = query_normalize(term)
             c.execute("SELECT * FROM vocabtable WHERE term=?",(term,))
             row = c.fetchone()
             number_docs = 0
@@ -93,7 +93,7 @@ class DiskIndex(object):
         postings_file = open('{}postings.bin'.format(self.path), 'rb')
         conn = sqlite3.connect('{}vocabtable.db'.format(self.path))
         c = conn.cursor()
-        term = normalize.query_normalize(term)
+        term = query_normalize(term)
         postings = list()
         c.execute("SELECT * FROM vocabtable WHERE term=?",(term,))
         for row in c:
@@ -133,7 +133,7 @@ class DiskIndex(object):
         index = {}
         for literal in query_literals:
             all_terms = literal.split()
-            all_terms = [normalize.query_normalize(term) for term in all_terms]
+            all_terms = [query_normalize(term) for term in all_terms]
             all_terms = set(all_terms)
             for subliteral in all_terms:
                 if subliteral not in index:

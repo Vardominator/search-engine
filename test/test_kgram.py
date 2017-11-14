@@ -57,26 +57,6 @@ def test_get_kgrams():
     kgram_test = kgram.KGramIndex(3)
     assert kgram_test.get_kgrams(word) == ans
 
-def test_jacard():
-    """Manually calculating jacard and comparing with results of function"""
-    kgram_test = kgram.KGramIndex(3)
-    word = kgram_test.get_kgrams("word")
-    other = kgram_test.get_kgrams("ward")
-    # Manual calculation
-    print(word.intersection(other))
-    print(word.union(other))
-    intersec = 8
-    w_gram = 14
-    a_gram = 14
-    ans = intersec / (14 + 14 - intersec)
-    assert kgram_test.calculate_jacard_coeff(word, other) == ans
-
-def test_edit_dist():
-    """Checking edit distance between two words"""
-    word = "word"
-    other = "wart"
-    assert kgram.KGramIndex.edit_dist(word, other) == 2
-
 def test_all_min_edits():
     """Checking all terms with minimum edit distance returned"""
     word = "iest"

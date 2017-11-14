@@ -135,6 +135,14 @@ def test_multiple_answer_wildcard_ranked():
     res = {i[0] for i in res}
     assert (ans == res)
 
+def test_wildcard_scores_correct():
+    """Checking that wildcards have same scores as all words"""
+    query = "*e"
+    words = "here we one"
+    ans = Q.query(words, ranked_flag=True)
+    res = Q.query(query, ranked_flag=True)
+    assert ans == res
+
 def test_wildcard_ranked_not_there():
     """Checking that empty result list is handled"""
     query = "ooogabb*"

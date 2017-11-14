@@ -8,9 +8,10 @@ from collections import defaultdict
 from itertools import chain, groupby
 from operator import itemgetter
 
-import normalize
 from kgram import KGramIndex
 from diskindex import DiskIndex
+from normalize import query_normalize, remove_special_characters
+from utils import intersect_sorted_lists, union_sorted_lists
 
 THRESHOLD = .35
 
@@ -43,19 +44,18 @@ class QueryProcessor(object):
         """Checks each term in query for spelling correction, returns new string
            if corrections are made"""
         terms = re.findall("\w+", query)
-        new_terms = [term if (normalize.remove_special_characters(term) in vocab or '*' in term) else self.select_best_spelling(term) for term in terms]
+        new_terms = [term if ('*' in term or remove_special_characters(term) in vocab) else self.select_best_spelling(term) for term in terms]
         if not terms == new_terms:
-            if None in new_terms:
-                return None
-            for term, new in zip(terms, new_terms):
-                if term != new:
-                    query = query.replace(term, new)
-            return query
+            if all(new_terms):
+                for term, new in zip(terms, new_terms):
+                    if term != new:
+                        query = query.replace(term, new)
+                return query
 
     def check_spelling_ranked(self, query, vocab):
         """Faster spell check when symbols are not important"""
         terms = query.split()
-        new_terms = [term if (normalize.remove_special_characters(term) in vocab or '*' in term) else self.select_best_spelling(term) for term in terms]
+        new_terms = [term if ('*' in term or remove_special_characters(term) in vocab) else self.select_best_spelling(term) for term in terms]
         if not terms == new_terms:
             if all(new_terms):
                 return " ".join(new_terms)
@@ -73,7 +73,7 @@ class QueryProcessor(object):
         using the "term at a time" algorithm"""
         A = defaultdict(int)
         heap = []
-        query = [word if '*' in word else normalize.query_normalize(word) for word in query.split()]
+        query = [word if '*' in word else query_normalize(word) for word in query.split()]
         for term in query:
             if '*' in term:
                 query.extend(self.wildcard_query(term))
@@ -120,7 +120,7 @@ class QueryProcessor(object):
                         wildcard = True
                 if wildcard:
                     continue
-                subliterals = [normalize.query_normalize(term) for term in subliterals]
+                subliterals = [query_normalize(term) for term in subliterals]
                 combined_postings_lists = list(chain.from_iterable([index[subliteral] for subliteral in subliterals]))
                 combined_postings_lists = sorted(combined_postings_lists, key=lambda t:t[0])
                 docs_with_current_query = []
@@ -134,7 +134,7 @@ class QueryProcessor(object):
                                 postings[i] = [posting - i for posting in postings[i]]
                             results = postings[0]
                             for p in postings[1:]:
-                                results = self.intersect_sorted_lists(results, p)
+                                results = intersect_sorted_lists(results, p)
                             results = list(results)
                             if len(results) > 0:
                                 docs_with_current_query.append(doc_postings[0][0])
@@ -144,8 +144,8 @@ class QueryProcessor(object):
             if docs_with_all_queries:
                 ids_intersect = docs_with_all_queries[0]
                 for l in docs_with_all_queries[1:]:
-                    ids_intersect = self.intersect_sorted_lists(ids_intersect, l)
-                success_doc_ids = self.union_sorted_lists(success_doc_ids, ids_intersect)
+                    ids_intersect = intersect_sorted_lists(ids_intersect, l)
+                success_doc_ids = union_sorted_lists(success_doc_ids, ids_intersect)
         return list(success_doc_ids)
 
     def wildcard_query(self, query):
@@ -165,66 +165,3 @@ class QueryProcessor(object):
         literals = query.split('+')
         literals = list(map(str.strip, literals))
         return literals
-
-    @staticmethod
-    def intersect_sorted_lists(list_one, list_two):
-        """Intersects two sorted lists"""
-        if not (list_one and list_two):
-            return
-        iter_one = iter(list_one)
-        iter_two = iter(list_two)
-        left = next(iter_one)
-        right = next(iter_two)
-        cur = -1
-        while True:
-            try:
-                if left < right:
-                    left = next(iter_one)
-                if right < left:
-                    right = next(iter_two)
-                if right == left:
-                    yield right
-                    right = next(iter_two)
-            except StopIteration:
-                break
-
-    @staticmethod
-    def union_sorted_lists(list_one, list_two):
-        """Combines two sorted lists while removing duplicates"""
-        if not list_one:
-            for a in list_two:
-                yield a
-            return
-        if not list_two:
-            for a in list_one:
-                yield a
-            return
-        iter_one = iter(list_one)
-        iter_two = iter(list_two)
-        left = next(iter_one)
-        right = next(iter_two)
-        cur = -1
-        while True:
-            if left < right:
-                if left > cur:
-                    cur = left
-                    yield cur
-                try:
-                    left = next(iter_one)
-                except StopIteration:
-                    last = right
-                    iter_one = iter_two
-                    break
-            else:
-                if right > cur:
-                    cur = right
-                    yield cur
-                try:
-                    right = next(iter_two)
-                except StopIteration:
-                    last = left
-                    break
-        if last > cur:
-            yield last
-        for i in iter_one:
-            yield i
