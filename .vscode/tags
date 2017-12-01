@@ -1,0 +1,160 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+DiskIndex	../diskindex.py	/^class DiskIndex(object):$/;"	kind:class	line:59
+IndexWriter	../diskindex.py	/^class IndexWriter(object):$/;"	kind:class	line:7
+KGramIndex	../kgram.py	/^class KGramIndex(object):$/;"	kind:class	line:5
+PATH	../test/test_diskindex.py	/^PATH = 'test\/bin\/'$/;"	kind:variable	line:21
+PositionalPosting	../memoryindex.py	/^class PositionalPosting():$/;"	kind:class	line:10
+Q	../test/test_query.py	/^Q = query.QueryProcessor(path='test\/bin\/', num_docs=5)$/;"	kind:variable	line:5
+QueryProcessor	../query.py	/^class QueryProcessor(object):$/;"	kind:class	line:18
+TEST_DOCS	../test/test_diskindex.py	/^TEST_DOCS = process_documents()$/;"	kind:variable	line:20
+TEST_LIST	../test/test_kgram.py	/^TEST_LIST = ['test', 'test2', 'other']$/;"	kind:variable	line:4
+THRESHOLD	../query.py	/^THRESHOLD = .35$/;"	kind:variable	line:16
+TRUE_INDEX	../test/test_memoryindex.py	/^TRUE_INDEX = collections.OrderedDict(sorted(TRUE_INDEX.items(), key=lambda t:t[0]))$/;"	kind:variable	line:47
+TRUE_INDEX	../test/test_memoryindex.py	/^TRUE_INDEX = {$/;"	kind:variable	line:24
+VOCAB	../memoryindex.py	/^VOCAB = set()$/;"	kind:variable	line:8
+VOCAB	../test/test_query.py	/^VOCAB = {'test', 'document', 'here', 'we', 'go', 'goe', 'anoth',$/;"	kind:variable	line:152
+__init__	../diskindex.py	/^    def __init__(self, docs_dir='data\/documents', path='bin\/'):$/;"	kind:member	line:13
+__init__	../diskindex.py	/^    def __init__(self, path='bin\/'):$/;"	kind:member	line:63
+__init__	../kgram.py	/^    def __init__(self, num_grams, vocab = None):$/;"	kind:member	line:12
+__init__	../memoryindex.py	/^    def __init__(self, doc_id, positions=[]):$/;"	kind:member	line:15
+__init__	../query.py	/^    def __init__(self, path='bin\/', num_docs=0):$/;"	kind:member	line:23
+__init__.py	../test/__init__.py	1;"	kind:file	line:1
+add_position	../memoryindex.py	/^    def add_position(self, position):$/;"	kind:member	line:18
+add_to_index	../kgram.py	/^    def add_to_index(self, input_list):$/;"	kind:member	line:27
+all_min_edits	../kgram.py	/^    def all_min_edits(self, items, qword):$/;"	kind:member	line:78
+app	../searchengine.py	/^app = Flask(__name__)$/;"	kind:variable	line:9
+article	../parsedocuments.py	/^article = 1$/;"	kind:variable	line:12
+boolean_query	../query.py	/^    def boolean_query(self, query):$/;"	kind:member	line:95
+build_index	../diskindex.py	/^    def build_index(self, processed_docs):$/;"	kind:member	line:19
+buildindex	../searchengine.py	/^def buildindex():$/;"	kind:function	line:17
+calculate_jacard_coeff	../utils.py	/^def calculate_jacard_coeff(q_set, t_set):$/;"	kind:function	line:4
+check_spelling	../query.py	/^    def check_spelling(self, query, vocab, ranked_flag=False):$/;"	kind:member	line:37
+check_spelling_boolean	../query.py	/^    def check_spelling_boolean(self, query, vocab):$/;"	kind:member	line:43
+check_spelling_ranked	../query.py	/^    def check_spelling_ranked(self, query, vocab):$/;"	kind:member	line:55
+create_index	../memoryindex.py	/^def create_index(processed_docs, path='bin\/'):$/;"	kind:function	line:22
+dehyphenate	../normalize.py	/^def dehyphenate(word):$/;"	kind:function	line:27
+diskindex.py	../diskindex.py	1;"	kind:file	line:1
+docs	../test/test_memoryindex.py	/^docs = process_documents()$/;"	kind:variable	line:22
+edit_dist	../utils.py	/^def edit_dist(qword, tword):$/;"	kind:function	line:11
+find_spelling_candidates	../kgram.py	/^    def find_spelling_candidates(self, qword, threshold):$/;"	kind:member	line:67
+find_spelling_no_candidates	../test/test_kgram.py	/^def find_spelling_no_candidates():$/;"	kind:function	line:85
+get_doc_frequency	../diskindex.py	/^    def get_doc_frequency(self, terms):$/;"	kind:member	line:66
+get_intersection_grams	../kgram.py	/^    def get_intersection_grams(self, grams):$/;"	kind:member	line:41
+get_kgrams	../kgram.py	/^    def get_kgrams(self, word):$/;"	kind:member	line:57
+get_postings	../diskindex.py	/^    def get_postings(self, term, positions=False):$/;"	kind:member	line:88
+get_vocab	../diskindex.py	/^    def get_vocab(self):$/;"	kind:member	line:167
+get_words	../kgram.py	/^    def get_words(self, gram):$/;"	kind:member	line:33
+home	../searchengine.py	/^def home():$/;"	kind:function	line:12
+index	../test/test_memoryindex.py	/^    index = memoryindex.create_index(docs)[0]$/;"	kind:variable	line:50
+intersect_sorted_lists	../utils.py	/^def intersect_sorted_lists(list_one, list_two):$/;"	kind:function	line:33
+kgram.py	../kgram.py	1;"	kind:file	line:1
+map_ngram	../kgram.py	/^    def map_ngram(self, word):$/;"	kind:member	line:18
+memoryindex.py	../memoryindex.py	1;"	kind:file	line:1
+normalize	../normalize.py	/^def normalize(word):$/;"	kind:function	line:6
+normalize.py	../normalize.py	1;"	kind:file	line:1
+nps	../parsedocuments.py	/^    nps = json.load(f)$/;"	kind:variable	line:7
+parsedocuments.py	../parsedocuments.py	1;"	kind:file	line:1
+process_documents	../test/test_diskindex.py	/^def process_documents():$/;"	kind:function	line:6
+process_documents	../test/test_memoryindex.py	/^def process_documents():$/;"	kind:function	line:8
+process_query	../query.py	/^    def process_query(query):$/;"	kind:member	line:163
+query	../query.py	/^    def query(self, query, ranked_flag=False):$/;"	kind:member	line:31
+query	../searchengine.py	/^def query():$/;"	kind:function	line:73
+query.py	../query.py	1;"	kind:file	line:1
+query_normalize	../normalize.py	/^def query_normalize(word):$/;"	kind:function	line:37
+ranked_query	../query.py	/^    def ranked_query(self, query, k):$/;"	kind:member	line:71
+remove_special_characters	../normalize.py	/^def remove_special_characters(word):$/;"	kind:function	line:19
+retrieve_postings	../diskindex.py	/^    def retrieve_postings(self, query_literals):$/;"	kind:member	line:123
+searchengine.py	../searchengine.py	1;"	kind:file	line:1
+select_best_spelling	../query.py	/^    def select_best_spelling(self, term):$/;"	kind:member	line:63
+showterms	../searchengine.py	/^def showterms():$/;"	kind:function	line:60
+split_gram	../kgram.py	/^    def split_gram(self, gram):$/;"	kind:member	line:50
+stem	../normalize.py	/^def stem(word):$/;"	kind:function	line:15
+stem	../searchengine.py	/^def stem():$/;"	kind:function	line:112
+test_add_to_index	../test/test_kgram.py	/^def test_add_to_index():$/;"	kind:function	line:22
+test_add_to_index_null_list	../test/test_kgram.py	/^def test_add_to_index_null_list():$/;"	kind:function	line:35
+test_all_files_exist	../test/test_diskindex.py	/^def test_all_files_exist():$/;"	kind:function	line:32
+test_all_min_edits	../test/test_kgram.py	/^def test_all_min_edits():$/;"	kind:function	line:60
+test_and_query	../test/test_query.py	/^def test_and_query():$/;"	kind:function	line:26
+test_basic_kgram_query	../test/test_query.py	/^def test_basic_kgram_query():$/;"	kind:function	line:85
+test_complex_query	../test/test_query.py	/^def test_complex_query():$/;"	kind:function	line:38
+test_dehyphenate_does_not_change_single_words	../test/test_normalize.py	/^def test_dehyphenate_does_not_change_single_words():$/;"	kind:function	line:24
+test_dehyphenate_splits_correctly	../test/test_normalize.py	/^def test_dehyphenate_splits_correctly():$/;"	kind:function	line:29
+test_diskindex.py	../test/test_diskindex.py	1;"	kind:file	line:1
+test_doc_frequency	../test/test_diskindex.py	/^def test_doc_frequency():$/;"	kind:function	line:155
+test_doc_frequency_word_not_in_index	../test/test_diskindex.py	/^def test_doc_frequency_word_not_in_index():$/;"	kind:function	line:161
+test_doc_retrieval_ranked_many	../test/test_query.py	/^def test_doc_retrieval_ranked_many():$/;"	kind:function	line:65
+test_doc_retrieval_ranked_one	../test/test_query.py	/^def test_doc_retrieval_ranked_one():$/;"	kind:function	line:57
+test_edit_dist	../test/test_utils.py	/^def test_edit_dist():$/;"	kind:function	line:16
+test_edit_dist_empty_word	../test/test_utils.py	/^def test_edit_dist_empty_word():$/;"	kind:function	line:22
+test_edit_dist_same_word	../test/test_utils.py	/^def test_edit_dist_same_word():$/;"	kind:function	line:28
+test_find_spelling_candidate	../test/test_kgram.py	/^def test_find_spelling_candidate():$/;"	kind:function	line:67
+test_find_spelling_two_candidates	../test/test_kgram.py	/^def test_find_spelling_two_candidates():$/;"	kind:function	line:76
+test_first_list_short_intersection	../test/test_utils.py	/^def test_first_list_short_intersection():$/;"	kind:function	line:40
+test_first_list_short_union	../test/test_utils.py	/^def test_first_list_short_union():$/;"	kind:function	line:58
+test_get_kgrams	../test/test_kgram.py	/^def test_get_kgrams():$/;"	kind:function	line:53
+test_get_postings_one_term_no_positions	../test/test_diskindex.py	/^def test_get_postings_one_term_no_positions():$/;"	kind:function	line:112
+test_get_postings_one_term_with_positions	../test/test_diskindex.py	/^def test_get_postings_one_term_with_positions():$/;"	kind:function	line:118
+test_get_postings_term_not_in_index	../test/test_diskindex.py	/^def test_get_postings_term_not_in_index():$/;"	kind:function	line:124
+test_get_words_gets_words	../test/test_kgram.py	/^def test_get_words_gets_words():$/;"	kind:function	line:41
+test_get_words_handles_no_key	../test/test_kgram.py	/^def test_get_words_handles_no_key():$/;"	kind:function	line:48
+test_index_collects_all_positions_in_document	../test/test_memoryindex.py	/^def test_index_collects_all_positions_in_document():$/;"	kind:function	line:62
+test_index_creation	../test/test_diskindex.py	/^def test_index_creation():$/;"	kind:function	line:26
+test_index_has_all_keys	../test/test_memoryindex.py	/^def test_index_has_all_keys():$/;"	kind:function	line:52
+test_index_has_all_postings	../test/test_memoryindex.py	/^def test_index_has_all_postings():$/;"	kind:function	line:56
+test_initialize_kgram	../test/test_kgram.py	/^def test_initialize_kgram():$/;"	kind:function	line:6
+test_jacard	../test/test_utils.py	/^def test_jacard():$/;"	kind:function	line:3
+test_kgram.py	../test/test_kgram.py	1;"	kind:file	line:1
+test_list_intersection	../test/test_utils.py	/^def test_list_intersection():$/;"	kind:function	line:34
+test_list_intersection_empty	../test/test_utils.py	/^def test_list_intersection_empty():$/;"	kind:function	line:46
+test_list_union	../test/test_utils.py	/^def test_list_union():$/;"	kind:function	line:52
+test_list_union_empty	../test/test_utils.py	/^def test_list_union_empty():$/;"	kind:function	line:64
+test_long_phrase_query	../test/test_query.py	/^def test_long_phrase_query():$/;"	kind:function	line:20
+test_map_ngram_keys_created	../test/test_kgram.py	/^def test_map_ngram_keys_created():$/;"	kind:function	line:12
+test_memoryindex.py	../test/test_memoryindex.py	1;"	kind:file	line:1
+test_most_relevant_first	../test/test_query.py	/^def test_most_relevant_first():$/;"	kind:function	line:73
+test_multiple_answer_wildcard_ranked	../test/test_query.py	/^def test_multiple_answer_wildcard_ranked():$/;"	kind:function	line:130
+test_multiple_stars	../test/test_query.py	/^def test_multiple_stars():$/;"	kind:function	line:97
+test_normalize.py	../test/test_normalize.py	1;"	kind:file	line:1
+test_not_in_vocab	../test/test_query.py	/^def test_not_in_vocab():$/;"	kind:function	line:109
+test_number_docs_correct	../test/test_diskindex.py	/^def test_number_docs_correct():$/;"	kind:function	line:59
+test_or_query	../test/test_query.py	/^def test_or_query():$/;"	kind:function	line:32
+test_phrase_query	../test/test_query.py	/^def test_phrase_query():$/;"	kind:function	line:14
+test_postings_mapped	../test/test_diskindex.py	/^def test_postings_mapped():$/;"	kind:function	line:46
+test_query.py	../test/test_query.py	1;"	kind:file	line:1
+test_query_normalize_hyphens	../test/test_normalize.py	/^def test_query_normalize_hyphens():$/;"	kind:function	line:35
+test_query_normalizes	../test/test_query.py	/^def test_query_normalizes():$/;"	kind:function	line:44
+test_query_not_in_index	../test/test_query.py	/^def test_query_not_in_index():$/;"	kind:function	line:50
+test_remove_does_not_remove_middle	../test/test_normalize.py	/^def test_remove_does_not_remove_middle():$/;"	kind:function	line:14
+test_remove_removes_apostrophes	../test/test_normalize.py	/^def test_remove_removes_apostrophes():$/;"	kind:function	line:19
+test_remove_special_characters_removes_beg_end	../test/test_normalize.py	/^def test_remove_special_characters_removes_beg_end():$/;"	kind:function	line:9
+test_retrieve_postings_positional_query	../test/test_diskindex.py	/^def test_retrieve_postings_positional_query():$/;"	kind:function	line:136
+test_retrieve_postings_query	../test/test_diskindex.py	/^def test_retrieve_postings_query():$/;"	kind:function	line:130
+test_retrieve_postings_term_not_in_index	../test/test_diskindex.py	/^def test_retrieve_postings_term_not_in_index():$/;"	kind:function	line:142
+test_single_term	../test/test_diskindex.py	/^def test_single_term():$/;"	kind:function	line:83
+test_spelling_boolean_symbols	../test/test_query.py	/^def test_spelling_boolean_symbols():$/;"	kind:function	line:171
+test_spelling_correction_multiple_words	../test/test_query.py	/^def test_spelling_correction_multiple_words():$/;"	kind:function	line:166
+test_spelling_correction_on_correct_query	../test/test_query.py	/^def test_spelling_correction_on_correct_query():$/;"	kind:function	line:156
+test_spelling_correction_one_word	../test/test_query.py	/^def test_spelling_correction_one_word():$/;"	kind:function	line:161
+test_spelling_ranked	../test/test_query.py	/^def test_spelling_ranked():$/;"	kind:function	line:181
+test_spelling_ranked_weird_word	../test/test_query.py	/^def test_spelling_ranked_weird_word():$/;"	kind:function	line:185
+test_spelling_weird_word	../test/test_query.py	/^def test_spelling_weird_word():$/;"	kind:function	line:176
+test_standard_query	../test/test_query.py	/^def test_standard_query():$/;"	kind:function	line:8
+test_star_at_front_kgram	../test/test_query.py	/^def test_star_at_front_kgram():$/;"	kind:function	line:91
+test_stem_stems	../test/test_normalize.py	/^def test_stem_stems():$/;"	kind:function	line:4
+test_utils.py	../test/test_utils.py	1;"	kind:file	line:1
+test_vocab_retrieval	../test/test_diskindex.py	/^def test_vocab_retrieval():$/;"	kind:function	line:148
+test_vocabtable_init	../test/test_diskindex.py	/^def test_vocabtable_init():$/;"	kind:function	line:38
+test_wildcard_ranked_many	../test/test_query.py	/^def test_wildcard_ranked_many():$/;"	kind:function	line:122
+test_wildcard_ranked_not_there	../test/test_query.py	/^def test_wildcard_ranked_not_there():$/;"	kind:function	line:146
+test_wildcard_ranked_one	../test/test_query.py	/^def test_wildcard_ranked_one():$/;"	kind:function	line:114
+test_wildcard_scores_correct	../test/test_query.py	/^def test_wildcard_scores_correct():$/;"	kind:function	line:138
+test_with_boolean	../test/test_query.py	/^def test_with_boolean():$/;"	kind:function	line:103
+union_sorted_lists	../utils.py	/^def union_sorted_lists(list_one, list_two):$/;"	kind:function	line:55
+utils.py	../utils.py	1;"	kind:file	line:1
+wildcard_query	../query.py	/^    def wildcard_query(self, query):$/;"	kind:member	line:151
+write_postings	../diskindex.py	/^    def write_postings(self, index, dictionary, vocab_positions):$/;"	kind:member	line:32

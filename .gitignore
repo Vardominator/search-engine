@@ -251,6 +251,8 @@ indexes
 *all-nps-sites*
 data/documents
 data/testdocuments
+data/imsdb_movie_scripts/*
+data/script_jsons/*
 bin_backup/
 
 # Compiled python
