@@ -1,5 +1,7 @@
+import heapq
 import pickle
 import sqlite3
+import struct
 
 from normalize import query_normalize
 import memoryindex
@@ -107,13 +109,15 @@ class DiskIndex(object):
                 term_freq_bytes = postings_file.read(4)
                 term_freq = int.from_bytes(term_freq_bytes, byteorder='big')
                 current_posting = [last_doc_id, term_freq]
-                doc_positions = []
-                for f in range(term_freq):
-                    position_bytes = postings_file.read(4)
-                    position = int.from_bytes(position_bytes, byteorder='big')
-                    doc_positions.append(position)
                 if positions:
+                    doc_positions = []
+                    for f in range(term_freq):
+                        position_bytes = postings_file.read(4)
+                        position = int.from_bytes(position_bytes, byteorder='big')
+                        doc_positions.append(position)
                     current_posting.append(doc_positions)
+                else:
+                    postings_file.seek(term_freq*4, 1)
                 postings.append(current_posting)
         c.close()
         conn.close()
@@ -150,13 +154,15 @@ class DiskIndex(object):
                             term_freq_bytes = postings_file.read(4)
                             term_freq = int.from_bytes(term_freq_bytes, byteorder='big')
                             current_posting = [last_doc_id, term_freq]
-                            doc_positions = []
-                            for f in range(term_freq):
-                                position_bytes = postings_file.read(4)
-                                position = int.from_bytes(position_bytes, byteorder='big')
-                                doc_positions.append(position)
                             if positions:
+                                doc_positions = []
+                                for f in range(term_freq):
+                                    position_bytes = postings_file.read(4)
+                                    position = int.from_bytes(position_bytes, byteorder='big')
+                                    doc_positions.append(position)
                                 current_posting.append(doc_positions)
+                            else:
+                                postings_file.seek(term_freq*4, 1)
                             index[subliteral].append(current_posting)
 
         postings_file.close()
@@ -171,3 +177,13 @@ class DiskIndex(object):
         conn.close()
         return vocab
 
+    @staticmethod
+    def get_k_scores(docs, k, path):
+        heap = []
+        with open('{}docWeights.bin'.format(path), 'rb') as f:
+            for doc, score in docs.items():
+                f.seek(8*(doc))
+                length = f.read(8)
+                ld = struct.unpack('d', length)
+                heapq.heappush(heap, (-score/ld[0], doc))
+        return [(key, -value) for value, key in heapq.nsmallest(k, heap)]

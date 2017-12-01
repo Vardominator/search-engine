@@ -1,8 +1,6 @@
-import heapq
 import math
 import pickle
 import shlex
-import struct
 import re
 from collections import defaultdict
 from itertools import chain, groupby
@@ -84,13 +82,7 @@ class QueryProcessor(object):
                 for posting in postings:
                     wdt = 1 + math.log(posting[1])
                     A[posting[0]] += wdt * wqt
-        with open('{}docWeights.bin'.format(self.path), 'rb') as f:
-            for doc, score in A.items():
-                f.seek(8*(doc))
-                length = f.read(8)
-                ld = struct.unpack('d', length)
-                heapq.heappush(heap, (-score/ld[0], doc))
-        return [(key, -value) for value, key in heapq.nsmallest(k, heap)]
+        return DiskIndex.get_k_scores(A, k, self.path)
 
     def boolean_query(self, query):
         """Returns the documents that satisfy a boolean query using the index"""

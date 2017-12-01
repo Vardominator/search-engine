@@ -74,7 +74,9 @@ def test_most_relevant_first():
     """Manually calculating the high score for a term and checking
        that it is the first result"""
     query = "test"
+    # 5 documents in corpus, test shows up in 4
     wqt = math.log(1 + 5/4)
+    # Test shows up 5 times in doc 3, only word in doc
     wdt = 1 + math.log(5)
     len_doc = math.sqrt((1+math.log(5))**2)
     res = Q.query(query, ranked_flag=True)
