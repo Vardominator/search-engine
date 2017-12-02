@@ -177,10 +177,9 @@ class DiskIndex(object):
         conn.close()
         return vocab
 
-    @staticmethod
-    def get_k_scores(docs, k, path):
+    def get_k_scores(self, docs, k):
         heap = []
-        with open('{}docWeights.bin'.format(path), 'rb') as f:
+        with open('{}docWeights.bin'.format(self.path), 'rb') as f:
             for doc, score in docs.items():
                 f.seek(8*(doc))
                 length = f.read(8)
