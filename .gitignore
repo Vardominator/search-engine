@@ -253,6 +253,7 @@ data/documents
 data/testdocuments
 data/imsdb_movie_scripts/*
 data/script_jsons/*
+data/spimi_blocks/*
 bin_backup/
 
 # Compiled python
