@@ -3,6 +3,11 @@ import pickle
 import sqlite3
 import struct
 
+import sys
+import json
+import os
+from collections import OrderedDict
+
 from normalize import query_normalize
 import memoryindex
 
@@ -187,3 +192,95 @@ class DiskIndex(object):
                 ld = struct.unpack('d', length)
                 heapq.heappush(heap, (-score/ld[0], doc))
         return [(key, -value) for value, key in heapq.nsmallest(k, heap)]
+
+
+
+class Spimi():
+    def __init__(self, blocksize, origin='', destination=''):
+        self.blocksize = blocksize
+        self.origin = origin
+        self.destination = destination
+        self.index = self.build()
+    
+    def get_postings(self):
+        pass
+
+    def build(self):
+        if not os.path.exists(self.destination):
+            os.makedirs(self.destination)
+        block_count = 0
+        dictionary = OrderedDict()
+        conn = sqlite3.connect('{}/vocab.db'.format(self.destination))
+        c = conn.cursor()
+        c.execute('DROP TABLE if exists vocab')
+        c.execute('CREATE TABLE vocab (term TEXT PRIMARY KEY)')
+        c.execute('DROP TABLE if exists block')
+        c.execute('CREATE TABLE block (block_id INTEGER PRIMARY KEY)')
+        c.execute('DROP TABLE if exists term_block')
+        c.execute('''CREATE TABLE term_block (position INTEGER, term TEXT, block_id INTEGER, 
+                                              FOREIGN KEY(term) REFERENCES vocab(term),
+                                              FOREIGN KEY(block_id) REFERENCES block(block_id))''')
+        
+        conn.commit()
+        # size in bites for number of documents
+        size = 4
+        for subdir, dirs, files in os.walk(self.origin):
+            for file in files:
+                with open('{}/{}'.format(subdir, file), 'r') as script_file:
+                    script = json.load(script_file)
+                    terms = [query_normalize(term) for term in script['body'].split()]
+                    vocab_table_terms = set()
+                    position = 0
+                    for term in terms:
+                        vocab_table_terms.add((term,))
+                        if size > self.blocksize:
+                            c.execute("INSERT INTO block VALUES (?)", (block_count,))
+                            c.executemany("INSERT OR IGNORE INTO vocab VALUES (?)", vocab_table_terms)
+                            self.write_block_to_disk(dictionary, self.destination, block_count, c)
+                            conn.commit()
+                            block_count += 1
+                            del dictionary
+                            dictionary = {}
+                            del vocab_table_terms
+                            vocab_table_terms = set()
+                            size = 0
+                        if term not in dictionary:
+                            dictionary[term] = [(files.index(file), [])]
+                            # size in bytes for docid
+                            size += 4
+                        postings_list = dictionary[term][-1]
+                        positions = postings_list[1]
+                        positions.append(position)
+                        # size in bytes for position
+                        size += 4
+                        position += 1
+
+            if size <= self.blocksize:
+                c.execute("INSERT INTO block VALUES (?)", block_count)
+                self.write_block_to_disk(dictionary, self.destination, block_count, c)
+        conn.commit()
+        conn.close()
+        
+    @staticmethod  
+    def write_block_to_disk(dictionary, destination, block_count, dbcursor):
+        with open('{}/block{}.bin'.format(destination, block_count), 'wb') as block_output:
+            term_positions = []
+            for term in dictionary.keys():
+                postings = dictionary[term]
+                term_positions.append((block_output.tell(), term, block_count))
+                block_output.write((len(postings)).to_bytes(4, byteorder='big'))
+                last_docid = 0
+                for postings_list in postings:
+                    block_output.write((postings_list[0] - last_docid).to_bytes(4, byteorder='big'))
+                    last_docid = postings_list[0]
+                    block_output.write((len(postings_list[1])).to_bytes(4, byteorder='big'))
+                    for position in postings_list[1]:
+                        block_output.write((position).to_bytes(4, byteorder='big'))
+            dbcursor.executemany("INSERT INTO term_block VALUES (?, ?, ?)", term_positions)
+
+    @staticmethod
+    def merge():
+        pass
+        
+if __name__ == "__main__":
+    spimi = Spimi(1024*1000*10, 'data/script_jsons', 'data/spimi_blocks')

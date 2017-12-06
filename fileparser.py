@@ -20,7 +20,6 @@ def scripts_to_json(origin, destination='movie_jsons'):
     if not os.path.exists(destination):
         os.makedirs(destination)
     for subdir, dirs, files in os.walk(origin):
-        # print(subdir)
         for file in files:
             genre = subdir.split('/')[-1]
             with open('{}/{}'.format(subdir, file), 'r') as f:
