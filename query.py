@@ -82,7 +82,7 @@ class QueryProcessor(object):
                 for posting in postings:
                     wdt = 1 + math.log(posting[1])
                     A[posting[0]] += wdt * wqt
-        return DiskIndex.get_k_scores(A, k, self.path)
+        return self.disk_index.get_k_scores(A, k)
 
     def boolean_query(self, query):
         """Returns the documents that satisfy a boolean query using the index"""
