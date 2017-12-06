@@ -207,8 +207,7 @@ class Spimi():
     def build(self):
         if not os.path.exists(self.destination):
             os.makedirs(self.destination)
-        block_count = 0
-        dictionary = OrderedDict()
+
         conn = sqlite3.connect('{}/vocab.db'.format(self.destination))
         c = conn.cursor()
         c.execute('DROP TABLE if exists vocab')
@@ -221,6 +220,8 @@ class Spimi():
                                               FOREIGN KEY(block_id) REFERENCES block(block_id))''')
         
         conn.commit()
+        block_count = 0
+        dictionary = OrderedDict()
         # size in bites for number of documents
         size = 4
         for subdir, dirs, files in os.walk(self.origin):
@@ -230,7 +231,7 @@ class Spimi():
                     terms = [query_normalize(term) for term in script['body'].split()]
                     vocab_table_terms = set()
                     position = 0
-                    for term in terms:
+                    for term in sorted(terms):
                         vocab_table_terms.add((term,))
                         if size > self.blocksize:
                             c.execute("INSERT INTO block VALUES (?)", (block_count,))
