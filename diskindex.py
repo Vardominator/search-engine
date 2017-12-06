@@ -275,8 +275,7 @@ class Spimi():
                 block_output.write((len(postings)).to_bytes(4, byteorder='big'))
                 last_docid = 0
                 for postings_list in postings:
-                    block_output.write((postings_list[0] - last_docid).to_bytes(4,
-        # c.execute('''SELECT id from sorted_vocab WHERE sorted_vocab.term = vocab_block.term''') byteorder='big'))
+                    block_output.write((postings_list[0] - last_docid).to_bytes(4, byteorder='big'))
                     last_docid = postings_list[0]
                     block_output.write((len(postings_list[1])).to_bytes(4, byteorder='big'))
                     for position in postings_list[1]:
