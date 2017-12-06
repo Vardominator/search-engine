@@ -219,7 +219,7 @@ class Spimi():
                                               FOREIGN KEY(term) REFERENCES vocab(term),
                                               FOREIGN KEY(block_id) REFERENCES block(block_id))''')
         c.execute('DROP TABLE if exists sorted_vocab')
-        c.execute('CREATE TABLE sorted_vocab (id INTEGER PRIMARY KEY, termID INTEGER, term TEXT)')
+        c.execute('CREATE TABLE sorted_vocab (id INTEGER PRIMARY KEY, term TEXT)')
 
         conn.commit()
         block_count = 0
@@ -261,7 +261,7 @@ class Spimi():
                 c.execute("INSERT INTO block VALUES (?)", (block_count, ))
                 self.write_block_to_disk(dictionary, self.destination, block_count, c)
         
-        c.execute('INSERT INTO sorted_vocab (termID, term) SELECT termID, term FROM vocab ORDER BY term')
+        c.execute('INSERT INTO sorted_vocab (term) SELECT term FROM vocab ORDER BY term')
         conn.commit()
         conn.close()
         
