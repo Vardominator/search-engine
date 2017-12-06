@@ -211,14 +211,16 @@ class Spimi():
         conn = sqlite3.connect('{}/vocab.db'.format(self.destination))
         c = conn.cursor()
         c.execute('DROP TABLE if exists vocab')
-        c.execute('CREATE TABLE vocab (term TEXT PRIMARY KEY)')
+        c.execute('CREATE TABLE vocab (termID INTEGER PRIMARY KEY, term TEXT)')
         c.execute('DROP TABLE if exists block')
         c.execute('CREATE TABLE block (block_id INTEGER PRIMARY KEY)')
-        c.execute('DROP TABLE if exists term_block')
-        c.execute('''CREATE TABLE term_block (position INTEGER, term TEXT, block_id INTEGER, 
+        c.execute('DROP TABLE if exists vocab_block')
+        c.execute('''CREATE TABLE vocab_block (position INTEGER, term TEXT, block_id INTEGER,
                                               FOREIGN KEY(term) REFERENCES vocab(term),
                                               FOREIGN KEY(block_id) REFERENCES block(block_id))''')
-        
+        c.execute('DROP TABLE if exists sorted_vocab')
+        c.execute('CREATE TABLE sorted_vocab (id INTEGER PRIMARY KEY, termID INTEGER, term TEXT)')
+
         conn.commit()
         block_count = 0
         dictionary = OrderedDict()
@@ -231,11 +233,11 @@ class Spimi():
                     terms = [query_normalize(term) for term in script['body'].split()]
                     vocab_table_terms = set()
                     position = 0
-                    for term in sorted(terms):
+                    for term in terms:
                         vocab_table_terms.add((term,))
                         if size > self.blocksize:
                             c.execute("INSERT INTO block VALUES (?)", (block_count,))
-                            c.executemany("INSERT OR IGNORE INTO vocab VALUES (?)", vocab_table_terms)
+                            c.executemany("INSERT OR IGNORE INTO vocab (term) VALUES (?)", vocab_table_terms)
                             self.write_block_to_disk(dictionary, self.destination, block_count, c)
                             conn.commit()
                             block_count += 1
@@ -256,8 +258,10 @@ class Spimi():
                         position += 1
 
             if size <= self.blocksize:
-                c.execute("INSERT INTO block VALUES (?)", block_count)
+                c.execute("INSERT INTO block VALUES (?)", (block_count, ))
                 self.write_block_to_disk(dictionary, self.destination, block_count, c)
+        
+        c.execute('INSERT INTO sorted_vocab (termID, term) SELECT termID, term FROM vocab ORDER BY term')
         conn.commit()
         conn.close()
         
@@ -271,16 +275,17 @@ class Spimi():
                 block_output.write((len(postings)).to_bytes(4, byteorder='big'))
                 last_docid = 0
                 for postings_list in postings:
-                    block_output.write((postings_list[0] - last_docid).to_bytes(4, byteorder='big'))
+                    block_output.write((postings_list[0] - last_docid).to_bytes(4,
+        # c.execute('''SELECT id from sorted_vocab WHERE sorted_vocab.term = vocab_block.term''') byteorder='big'))
                     last_docid = postings_list[0]
                     block_output.write((len(postings_list[1])).to_bytes(4, byteorder='big'))
                     for position in postings_list[1]:
                         block_output.write((position).to_bytes(4, byteorder='big'))
-            dbcursor.executemany("INSERT INTO term_block VALUES (?, ?, ?)", term_positions)
+            dbcursor.executemany("INSERT INTO vocab_block VALUES (?, ?, ?)", term_positions)
 
     @staticmethod
     def merge():
         pass
         
 if __name__ == "__main__":
-    spimi = Spimi(1024*1000*10, 'data/script_jsons', 'data/spimi_blocks')
+    spimi = Spimi(1024*1000, 'data/script_jsons', 'data/spimi_blocks')
