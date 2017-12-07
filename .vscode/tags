@@ -48,7 +48,7 @@ edit_dist	../utils.py	/^def edit_dist(qword, tword):$/;"	kind:function	line:11
 fileparser.py	../fileparser.py	1;"	kind:file	line:1
 find_spelling_candidates	../kgram.py	/^    def find_spelling_candidates(self, qword, threshold):$/;"	kind:member	line:67
 find_spelling_no_candidates	../test/test_kgram.py	/^def find_spelling_no_candidates():$/;"	kind:function	line:85
-get_block_postings	../diskindex.py	/^    def get_block_postings(block, position):$/;"	kind:member	line:330
+get_block_postings	../diskindex.py	/^    def get_block_postings(block, position):$/;"	kind:member	line:325
 get_doc_frequency	../diskindex.py	/^    def get_doc_frequency(self, terms):$/;"	kind:member	line:75
 get_intersection_grams	../kgram.py	/^    def get_intersection_grams(self, grams):$/;"	kind:member	line:41
 get_k_scores	../diskindex.py	/^    def get_k_scores(self, docs, k):$/;"	kind:member	line:187
@@ -63,7 +63,7 @@ intersect_sorted_lists	../utils.py	/^def intersect_sorted_lists(list_one, list_t
 kgram.py	../kgram.py	1;"	kind:file	line:1
 map_ngram	../kgram.py	/^    def map_ngram(self, word):$/;"	kind:member	line:18
 memoryindex.py	../memoryindex.py	1;"	kind:file	line:1
-merge	../diskindex.py	/^    def merge(self, dbcursor):$/;"	kind:member	line:293
+merge	../diskindex.py	/^    def merge(self, dbcursor):$/;"	kind:member	line:285
 normalize	../normalize.py	/^def normalize(word):$/;"	kind:function	line:6
 normalize.py	../normalize.py	1;"	kind:file	line:1
 nps	../parsedocuments.py	/^    nps = json.load(f)$/;"	kind:variable	line:7
@@ -82,7 +82,7 @@ scripts_to_json	../fileparser.py	/^def scripts_to_json(origin, destination='movi
 searchengine.py	../searchengine.py	1;"	kind:file	line:1
 select_best_spelling	../query.py	/^    def select_best_spelling(self, term):$/;"	kind:member	line:61
 showterms	../searchengine.py	/^def showterms():$/;"	kind:function	line:60
-spimi	../diskindex.py	/^    spimi = Spimi(1024*1000, 'data\/script_jsons', 'data\/spimi_blocks')$/;"	kind:variable	line:356
+spimi	../diskindex.py	/^    spimi = Spimi(20, 'test\/test_docs', 'data\/test_spimi_blocks')$/;"	kind:variable	line:344
 split_gram	../kgram.py	/^    def split_gram(self, gram):$/;"	kind:member	line:50
 split_nps_json	../fileparser.py	/^def split_nps_json(origin, destination, key, name=''):$/;"	kind:function	line:5
 stem	../normalize.py	/^def stem(word):$/;"	kind:function	line:15
@@ -177,5 +177,6 @@ text	../fileparser.py	/^    text = text.replace('for educational use only', '')$
 union_sorted_lists	../utils.py	/^def union_sorted_lists(list_one, list_two):$/;"	kind:function	line:55
 utils.py	../utils.py	1;"	kind:file	line:1
 wildcard_query	../query.py	/^    def wildcard_query(self, query):$/;"	kind:member	line:143
-write_block_to_disk	../diskindex.py	/^    def write_block_to_disk(dictionary, destination, block_count, dbcursor):$/;"	kind:member	line:278
+write_block_to_disk	../diskindex.py	/^    def write_block_to_disk(self, dictionary, block_count, dbcursor):$/;"	kind:member	line:276
+write_postings	../diskindex.py	/^    def write_postings(postings_file, postings):$/;"	kind:member	line:313
 write_postings	../diskindex.py	/^    def write_postings(self, index, dictionary, vocab_positions):$/;"	kind:member	line:41
