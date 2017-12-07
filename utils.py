@@ -1,5 +1,6 @@
 """Utility module"""
 import numpy as np
+from math import sqrt, log
 
 def calculate_jacard_coeff(q_set, t_set):
         """Calculates jacard coefficient using alternate

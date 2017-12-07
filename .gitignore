@@ -266,3 +266,5 @@ __pycache__
 node_modules/
 semantic/
 semantic-ui-sandbox/
+
+.vscode/
