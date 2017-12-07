@@ -1,5 +1,0 @@
-{
-    "python.linting.pylintEnabled": false,
-    "git.ignoreLimitWarning": true,
-    "python.formatting.provider": "yapf"
-}
