@@ -211,7 +211,8 @@ class Spimi():
         # size in bites for number of documents
         size = 4
         for subdir, dirs, files in os.walk(self.origin):
-            for file in sorted(files):
+            files = sorted(files)
+            for file in files:
                 with open('{}/{}'.format(subdir, file), 'r') as script_file:
                     script = json.load(script_file)
                     preterms = script['body'].split()
@@ -264,6 +265,7 @@ class Spimi():
         with open('{}/block{}.bin'.format(self.destination, block_count), 'wb') as block_output:
             term_positions = []
             for term in dictionary.keys():
+                print(term)
                 postings = dictionary[term]
                 term_positions.append((block_output.tell(), term, block_count))
                 self.write_postings(block_output, postings)
@@ -300,10 +302,12 @@ class Spimi():
     def write_postings(postings_file, postings):
         start_position = postings_file.tell()
         postings_file.write((len(postings)).to_bytes(4, byteorder='big'))
+        last_doc_id = 0
         for posting in postings:
             postings_list = posting.postings_list
-            postings_file.write((postings_list[0]).to_bytes(4, byteorder='big'))
+            postings_file.write((postings_list[0] - last_doc_id).to_bytes(4, byteorder='big'))
             postings_file.write(len(postings_list[1]).to_bytes(4, byteorder='big'))
+            last_doc_id = postings_list[0]
             for position in postings_list[1]:
                 postings_file.write((position).to_bytes(4, byteorder='big'))
         return start_position
@@ -314,10 +318,12 @@ class Spimi():
         number_docs_bytes = block.read(4)
         number_docs = int.from_bytes(number_docs_bytes, byteorder='big')
         block_postings = []
+        last_doc_id = 0
         for d in range(number_docs):
-            doc_id_bytes = block.read(4)
-            doc_id = int.from_bytes(doc_id_bytes, byteorder='big')
-            block_postings.append(PositionalPosting(doc_id, []))
+            doc_id_gap_bytes = block.read(4)
+            doc_id_gap = int.from_bytes(doc_id_gap_bytes, byteorder='big')
+            last_doc_id += doc_id_gap
+            block_postings.append(PositionalPosting(last_doc_id, []))
             term_freq_bytes = block.read(4)
             term_freq = int.from_bytes(term_freq_bytes, byteorder='big')
             for f in range(term_freq):
