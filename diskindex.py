@@ -11,6 +11,7 @@ from glob import glob
 from operator import itemgetter
 from normalize import query_normalize
 import memoryindex
+from memoryindex import PositionalPosting
 
 class IndexWriter(object):
     """Writes inverted index to disk. Terms are extracted from the index.
@@ -248,14 +249,16 @@ class Spimi():
                             vocab_table_terms = set()
                             size = 0
                         if term not in dictionary:
-                            print(file)
-                            dictionary[term] = [(files.index(file), [])]
-                            # size in bytes for docid
+                            dictionary[term] = []
+                        if len(dictionary[term]) == 0:
+                            dictionary[term].append(PositionalPosting(files.index(file), [position]))
+                        else:
+                            last_posting = dictionary[term][-1]
+                            if last_posting.postings_list[0] == files.index(file):
+                                last_posting.add_position(position)
+                            else:
+                                dictionary[term].append(PositionalPosting(files.index(file), [position]))
                             size += 4
-                        postings_list = dictionary[term][-1]
-                        positions = postings_list[1]
-                        positions.append(position)
-                        # size in bytes for position
                         size += 4
                         position += 1
 
@@ -273,16 +276,16 @@ class Spimi():
 
     @staticmethod
     def write_block_to_disk(dictionary, destination, block_count, dbcursor):
+        print(dictionary.keys())
         with open('{}/block{}.bin'.format(destination, block_count), 'wb') as block_output:
             term_positions = []
             for term in dictionary.keys():
                 postings = dictionary[term]
                 term_positions.append((block_output.tell(), term, block_count))
                 block_output.write((len(postings)).to_bytes(4, byteorder='big'))
-                last_docid = 0
-                for postings_list in postings:
-                    block_output.write((postings_list[0] - last_docid).to_bytes(4, byteorder='big'))
-                    last_docid = postings_list[0]
+                for posting in postings:
+                    postings_list = posting.postings_list
+                    block_output.write((postings_list[0]).to_bytes(4, byteorder='big'))
                     block_output.write((len(postings_list[1])).to_bytes(4, byteorder='big'))
                     for position in postings_list[1]:
                         block_output.write((position).to_bytes(4, byteorder='big'))
@@ -301,7 +304,7 @@ class Spimi():
         for i in range(1,num_terms + 1):
             dbcursor.execute("SELECT term FROM sorted_vocab WHERE id = ?", (i,))
             term = dbcursor.fetchone()[0]
-            print(term)
+            # print(term)
             dbcursor.execute("SELECT block_id, position FROM vocab_block WHERE term = ?",(term,))
             blocks = dbcursor.fetchall()
             postings = []
@@ -310,10 +313,10 @@ class Spimi():
                 postings.append(posting)
             term_positions.append([term, postings_file.tell()])
             postings_file.write((len(postings)).to_bytes(4, byteorder='big'))
-            last_docid = 0
+            # last_docid = 0
             for postings_list in postings:
-                postings_file.write((postings_list[0] - last_docid).to_bytes(4, byteorder='big'))
-                last_docid = postings_list[0]
+                postings_file.write((postings_list[0]).to_bytes(4, byteorder='big'))
+                # last_docid = postings_list[0]
                 postings_file.write(postings_list[1].to_bytes(4, byteorder='big'))
                 for position in postings_list[2]:
                     postings_file.write((position).to_bytes(4, byteorder='big'))
@@ -329,21 +332,24 @@ class Spimi():
         block.seek(position)
         number_docs_bytes = block.read(4)
         number_docs = int.from_bytes(number_docs_bytes, byteorder='big')
-        last_doc_id = 0
+        # last_doc_id = 0
         for d in range(number_docs):
-            doc_id_gap_bytes = block.read(4)
-            doc_id_gap = int.from_bytes(doc_id_gap_bytes, byteorder='big')
-            last_doc_id += doc_id_gap
+            # doc_id_gap_bytes = block.read(4)
+            doc_id_bytes = block.read(4)
+            # doc_id_gap = int.from_bytes(doc_id_gap_bytes, byteorder='big')
+            doc_id = int.from_bytes(doc_id_bytes, byteorder='big')
+            # last_doc_id += doc_id_gap
             term_freq_bytes = block.read(4)
             term_freq = int.from_bytes(term_freq_bytes, byteorder='big')
-            current_posting = [last_doc_id, term_freq]
+            # current_posting = [last_doc_id, term_freq]
+            current_posting = [doc_id, term_freq]
             doc_positions = []
             for f in range(term_freq):
                 position_bytes = block.read(4)
                 position = int.from_bytes(position_bytes, byteorder='big')
                 doc_positions.append(position)
             current_posting.append(doc_positions)
-        print(current_posting)
+        # print(current_posting)
         return current_posting
 
 
