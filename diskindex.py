@@ -210,7 +210,7 @@ class Spimi():
         if not os.path.exists(self.destination):
             os.makedirs(self.destination)
 
-        conn = sqlite3.connect('{}/vocab.db'.format(self.destination))
+        conn = sqlite3.connect('{}/vocabtable.db'.format(self.destination))
         c = conn.cursor()
         c.execute('DROP TABLE if exists vocab')
         c.execute('CREATE TABLE vocab (termID INTEGER PRIMARY KEY, term TEXT)')
@@ -240,7 +240,7 @@ class Spimi():
                         if size > self.blocksize and terms.index(term) != len(terms) - 1:
                             c.execute("INSERT INTO block VALUES (?)", (block_count,))
                             c.executemany("INSERT OR IGNORE INTO vocab (term) VALUES (?)", vocab_table_terms)
-                            self.write_block_to_disk(dictionary, self.destination, block_count, c)
+                            self.write_block_to_disk(dictionary, block_count, c)
                             conn.commit()
                             block_count += 1
                             del dictionary
@@ -265,7 +265,7 @@ class Spimi():
             if size <= self.blocksize:
                 c.execute("INSERT INTO block VALUES (?)", (block_count, ))
                 c.executemany("INSERT OR IGNORE INTO vocab (term) VALUES (?)", vocab_table_terms)
-                self.write_block_to_disk(dictionary, self.destination, block_count, c)
+                self.write_block_to_disk(dictionary, block_count, c)
 
         c.execute('INSERT INTO sorted_vocab (term) SELECT DISTINCT term FROM vocab ORDER BY term')
         conn.commit()
@@ -273,21 +273,13 @@ class Spimi():
         conn.commit()
         conn.close()
 
-
-    @staticmethod
-    def write_block_to_disk(dictionary, destination, block_count, dbcursor):
-        with open('{}/block{}.bin'.format(destination, block_count), 'wb') as block_output:
+    def write_block_to_disk(self, dictionary, block_count, dbcursor):
+        with open('{}/block{}.bin'.format(self.destination, block_count), 'wb') as block_output:
             term_positions = []
             for term in dictionary.keys():
                 postings = dictionary[term]
                 term_positions.append((block_output.tell(), term, block_count))
-                block_output.write((len(postings)).to_bytes(4, byteorder='big'))
-                for posting in postings:
-                    postings_list = posting.postings_list
-                    block_output.write((postings_list[0]).to_bytes(4, byteorder='big'))
-                    block_output.write((len(postings_list[1])).to_bytes(4, byteorder='big'))
-                    for position in postings_list[1]:
-                        block_output.write((position).to_bytes(4, byteorder='big'))
+                self.write_postings(block_output, postings)
             dbcursor.executemany("INSERT INTO vocab_block VALUES (?, ?, ?)", term_positions)
 
     def merge(self, dbcursor):
@@ -303,54 +295,50 @@ class Spimi():
         for i in range(1,num_terms + 1):
             dbcursor.execute("SELECT term FROM sorted_vocab WHERE id = ?", (i,))
             term = dbcursor.fetchone()[0]
-            # print(term)
             dbcursor.execute("SELECT block_id, position FROM vocab_block WHERE term = ?",(term,))
             blocks = dbcursor.fetchall()
             postings = []
             for block in blocks:
-                posting = self.get_block_postings(block_list[block[0]], block[1])
-                postings.append(posting)
-            term_positions.append([term, postings_file.tell()])
-            postings_file.write((len(postings)).to_bytes(4, byteorder='big'))
-            # last_docid = 0
-            for postings_list in postings:
-                postings_file.write((postings_list[0]).to_bytes(4, byteorder='big'))
-                # last_docid = postings_list[0]
-                postings_file.write(postings_list[1].to_bytes(4, byteorder='big'))
-                for position in postings_list[2]:
-                    postings_file.write((position).to_bytes(4, byteorder='big'))
+                block_postings = self.get_block_postings(block_list[block[0]], block[1])
+                postings.extend(block_postings)
+            position = self.write_postings(postings_file, postings)
+            term_positions.append((term, position))
         dbcursor.executemany("INSERT INTO vocabtable VALUES (?, ?)",term_positions)
         for f in block_list:
             f.close()
             os.remove(f.name)
-        # TODO: Drop all tables here after testing
         postings_file.close()
+
+    @staticmethod
+    def write_postings(postings_file, postings):
+        start_position = postings_file.tell()
+        postings_file.write((len(postings)).to_bytes(4, byteorder='big'))
+        for posting in postings:
+            postings_list = posting.postings_list
+            postings_file.write((postings_list[0]).to_bytes(4, byteorder='big'))
+            postings_file.write(len(postings_list[1]).to_bytes(4, byteorder='big'))
+            for position in postings_list[1]:
+                postings_file.write((position).to_bytes(4, byteorder='big'))
+        return start_position
 
     @staticmethod
     def get_block_postings(block, position):
         block.seek(position)
         number_docs_bytes = block.read(4)
         number_docs = int.from_bytes(number_docs_bytes, byteorder='big')
-        # last_doc_id = 0
+        block_postings = []
         for d in range(number_docs):
-            # doc_id_gap_bytes = block.read(4)
             doc_id_bytes = block.read(4)
-            # doc_id_gap = int.from_bytes(doc_id_gap_bytes, byteorder='big')
             doc_id = int.from_bytes(doc_id_bytes, byteorder='big')
-            # last_doc_id += doc_id_gap
+            block_postings.append(PositionalPosting(doc_id, []))
             term_freq_bytes = block.read(4)
             term_freq = int.from_bytes(term_freq_bytes, byteorder='big')
-            # current_posting = [last_doc_id, term_freq]
-            current_posting = [doc_id, term_freq]
-            doc_positions = []
             for f in range(term_freq):
                 position_bytes = block.read(4)
                 position = int.from_bytes(position_bytes, byteorder='big')
-                doc_positions.append(position)
-            current_posting.append(doc_positions)
-        # print(current_posting)
-        return current_posting
+                block_postings[-1].add_position(position)
+        return block_postings
 
 
 if __name__ == "__main__":
-    spimi = Spimi(1024*1000, 'data/script_jsons', 'data/spimi_blocks')
+    spimi = Spimi(32, 'test/test_docs', 'data/test_spimi_blocks')
