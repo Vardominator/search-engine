@@ -10,7 +10,7 @@ from collections import OrderedDict, defaultdict
 from glob import glob
 from math import sqrt, log
 from operator import itemgetter
-from normalize import query_normalize
+from normalize import *
 import memoryindex
 from memoryindex import PositionalPosting
 
@@ -214,35 +214,38 @@ class Spimi():
             for file in sorted(files):
                 with open('{}/{}'.format(subdir, file), 'r') as script_file:
                     script = json.load(script_file)
-                    terms = [query_normalize(term) for term in script['body'].split()]
+                    preterms = script['body'].split()
                     position = 0
-                    for term in terms:
-                        term_map[term] += 1
-                        vocab_table_terms.append((term,))
-                        if size > self.blocksize and terms.index(term) == len(terms) - 1:
-                            c.execute("INSERT INTO block VALUES (?)", (block_count,))
-                            c.executemany("INSERT OR IGNORE INTO vocab (term) VALUES (?)", vocab_table_terms)
-                            self.write_block_to_disk(dictionary, block_count, c)
-                            conn.commit()
-                            block_count += 1
-                            del dictionary
-                            dictionary = {}
-                            del vocab_table_terms
-                            vocab_table_terms = []
-                            size = 0
-                        if term not in dictionary:
-                            dictionary[term] = []
-                        if len(dictionary[term]) == 0:
-                            dictionary[term].append(PositionalPosting(files.index(file), [position]))
-                        else:
-                            last_posting = dictionary[term][-1]
-                            if last_posting.postings_list[0] == files.index(file):
-                                last_posting.add_position(position)
-                            else:
+                    for word in preterms:
+                        word = remove_special_characters(word)
+                        terms = normalize(word)
+                        for term in terms:
+                            term_map[term] += 1
+                            vocab_table_terms.append((term,))
+                            if size > self.blocksize and terms.index(term) == len(terms) - 1:
+                                c.execute("INSERT INTO block VALUES (?)", (block_count,))
+                                c.executemany("INSERT OR IGNORE INTO vocab (term) VALUES (?)", vocab_table_terms)
+                                self.write_block_to_disk(dictionary, block_count, c)
+                                conn.commit()
+                                block_count += 1
+                                del dictionary
+                                dictionary = {}
+                                del vocab_table_terms
+                                vocab_table_terms = []
+                                size = 0
+                            if term not in dictionary:
+                                dictionary[term] = []
+                            if len(dictionary[term]) == 0:
                                 dictionary[term].append(PositionalPosting(files.index(file), [position]))
+                            else:
+                                last_posting = dictionary[term][-1]
+                                if last_posting.postings_list[0] == files.index(file):
+                                    last_posting.add_position(position)
+                                else:
+                                    dictionary[term].append(PositionalPosting(files.index(file), [position]))
+                                size += 4
                             size += 4
-                        size += 4
-                        position += 1
+                            position += 1
                 doc_weights.write(self.pack_weight(term_map))
 
             if size <= self.blocksize:
