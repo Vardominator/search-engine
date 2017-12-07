@@ -4,14 +4,14 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-DiskIndex	../diskindex.py	/^class DiskIndex(object):$/;"	kind:class	line:66
-IndexWriter	../diskindex.py	/^class IndexWriter(object):$/;"	kind:class	line:14
+DiskIndex	../diskindex.py	/^class DiskIndex(object):$/;"	kind:class	line:68
+IndexWriter	../diskindex.py	/^class IndexWriter(object):$/;"	kind:class	line:16
 KGramIndex	../kgram.py	/^class KGramIndex(object):$/;"	kind:class	line:5
 PATH	../test/test_diskindex.py	/^PATH = 'test\/bin\/'$/;"	kind:variable	line:21
 PositionalPosting	../memoryindex.py	/^class PositionalPosting():$/;"	kind:class	line:10
 Q	../test/test_query.py	/^Q = query.QueryProcessor(path='test\/bin\/', num_docs=5)$/;"	kind:variable	line:5
 QueryProcessor	../query.py	/^class QueryProcessor(object):$/;"	kind:class	line:16
-Spimi	../diskindex.py	/^class Spimi():$/;"	kind:class	line:197
+Spimi	../diskindex.py	/^class Spimi():$/;"	kind:class	line:199
 TEST_DOCS	../test/test_diskindex.py	/^TEST_DOCS = process_documents()$/;"	kind:variable	line:20
 TEST_LIST	../test/test_kgram.py	/^TEST_LIST = ['test', 'test2', 'other']$/;"	kind:variable	line:4
 THRESHOLD	../query.py	/^THRESHOLD = .35$/;"	kind:variable	line:14
@@ -19,9 +19,9 @@ TRUE_INDEX	../test/test_memoryindex.py	/^TRUE_INDEX = collections.OrderedDict(so
 TRUE_INDEX	../test/test_memoryindex.py	/^TRUE_INDEX = {$/;"	kind:variable	line:24
 VOCAB	../memoryindex.py	/^VOCAB = set()$/;"	kind:variable	line:8
 VOCAB	../test/test_query.py	/^VOCAB = {'test', 'document', 'here', 'we', 'go', 'goe', 'anoth',$/;"	kind:variable	line:154
-__init__	../diskindex.py	/^    def __init__(self, blocksize, origin='', destination=''):$/;"	kind:member	line:198
-__init__	../diskindex.py	/^    def __init__(self, docs_dir='data\/documents', path='bin\/'):$/;"	kind:member	line:20
-__init__	../diskindex.py	/^    def __init__(self, path='bin\/'):$/;"	kind:member	line:70
+__init__	../diskindex.py	/^    def __init__(self, blocksize, origin='', destination=''):$/;"	kind:member	line:200
+__init__	../diskindex.py	/^    def __init__(self, docs_dir='data\/documents', path='bin\/'):$/;"	kind:member	line:22
+__init__	../diskindex.py	/^    def __init__(self, path='bin\/'):$/;"	kind:member	line:72
 __init__	../kgram.py	/^    def __init__(self, num_grams, vocab = None):$/;"	kind:member	line:12
 __init__	../memoryindex.py	/^    def __init__(self, doc_id, positions=[]):$/;"	kind:member	line:15
 __init__	../query.py	/^    def __init__(self, path='bin\/', num_docs=0):$/;"	kind:member	line:21
@@ -32,8 +32,8 @@ all_min_edits	../kgram.py	/^    def all_min_edits(self, items, qword):$/;"	kind:
 app	../searchengine.py	/^app = Flask(__name__)$/;"	kind:variable	line:9
 article	../parsedocuments.py	/^article = 1$/;"	kind:variable	line:12
 boolean_query	../query.py	/^    def boolean_query(self, query):$/;"	kind:member	line:87
-build	../diskindex.py	/^    def build(self):$/;"	kind:member	line:207
-build_index	../diskindex.py	/^    def build_index(self, processed_docs):$/;"	kind:member	line:26
+build	../diskindex.py	/^    def build(self):$/;"	kind:member	line:209
+build_index	../diskindex.py	/^    def build_index(self, processed_docs):$/;"	kind:member	line:28
 buildindex	../searchengine.py	/^def buildindex():$/;"	kind:function	line:17
 calculate_jacard_coeff	../utils.py	/^def calculate_jacard_coeff(q_set, t_set):$/;"	kind:function	line:4
 check_spelling	../query.py	/^    def check_spelling(self, query, vocab, ranked_flag=False):$/;"	kind:member	line:35
@@ -48,13 +48,14 @@ edit_dist	../utils.py	/^def edit_dist(qword, tword):$/;"	kind:function	line:11
 fileparser.py	../fileparser.py	1;"	kind:file	line:1
 find_spelling_candidates	../kgram.py	/^    def find_spelling_candidates(self, qword, threshold):$/;"	kind:member	line:67
 find_spelling_no_candidates	../test/test_kgram.py	/^def find_spelling_no_candidates():$/;"	kind:function	line:85
-get_doc_frequency	../diskindex.py	/^    def get_doc_frequency(self, terms):$/;"	kind:member	line:73
+get_block_postings	../diskindex.py	/^    def get_block_postings(block, position):$/;"	kind:member	line:330
+get_doc_frequency	../diskindex.py	/^    def get_doc_frequency(self, terms):$/;"	kind:member	line:75
 get_intersection_grams	../kgram.py	/^    def get_intersection_grams(self, grams):$/;"	kind:member	line:41
-get_k_scores	../diskindex.py	/^    def get_k_scores(self, docs, k):$/;"	kind:member	line:185
+get_k_scores	../diskindex.py	/^    def get_k_scores(self, docs, k):$/;"	kind:member	line:187
 get_kgrams	../kgram.py	/^    def get_kgrams(self, word):$/;"	kind:member	line:57
-get_postings	../diskindex.py	/^    def get_postings(self):$/;"	kind:member	line:204
-get_postings	../diskindex.py	/^    def get_postings(self, term, positions=False):$/;"	kind:member	line:95
-get_vocab	../diskindex.py	/^    def get_vocab(self):$/;"	kind:member	line:177
+get_postings	../diskindex.py	/^    def get_postings(self):$/;"	kind:member	line:206
+get_postings	../diskindex.py	/^    def get_postings(self, term, positions=False):$/;"	kind:member	line:97
+get_vocab	../diskindex.py	/^    def get_vocab(self):$/;"	kind:member	line:179
 get_words	../kgram.py	/^    def get_words(self, gram):$/;"	kind:member	line:33
 home	../searchengine.py	/^def home():$/;"	kind:function	line:12
 index	../test/test_memoryindex.py	/^    index = memoryindex.create_index(docs)[0]$/;"	kind:variable	line:50
@@ -62,7 +63,7 @@ intersect_sorted_lists	../utils.py	/^def intersect_sorted_lists(list_one, list_t
 kgram.py	../kgram.py	1;"	kind:file	line:1
 map_ngram	../kgram.py	/^    def map_ngram(self, word):$/;"	kind:member	line:18
 memoryindex.py	../memoryindex.py	1;"	kind:file	line:1
-merge	../diskindex.py	/^    def merge():$/;"	kind:member	line:286
+merge	../diskindex.py	/^    def merge(self, dbcursor):$/;"	kind:member	line:293
 normalize	../normalize.py	/^def normalize(word):$/;"	kind:function	line:6
 normalize.py	../normalize.py	1;"	kind:file	line:1
 nps	../parsedocuments.py	/^    nps = json.load(f)$/;"	kind:variable	line:7
@@ -76,12 +77,12 @@ query.py	../query.py	1;"	kind:file	line:1
 query_normalize	../normalize.py	/^def query_normalize(word):$/;"	kind:function	line:37
 ranked_query	../query.py	/^    def ranked_query(self, query, k):$/;"	kind:member	line:69
 remove_special_characters	../normalize.py	/^def remove_special_characters(word):$/;"	kind:function	line:19
-retrieve_postings	../diskindex.py	/^    def retrieve_postings(self, query_literals):$/;"	kind:member	line:132
+retrieve_postings	../diskindex.py	/^    def retrieve_postings(self, query_literals):$/;"	kind:member	line:134
 scripts_to_json	../fileparser.py	/^def scripts_to_json(origin, destination='movie_jsons'):$/;"	kind:function	line:18
 searchengine.py	../searchengine.py	1;"	kind:file	line:1
 select_best_spelling	../query.py	/^    def select_best_spelling(self, term):$/;"	kind:member	line:61
 showterms	../searchengine.py	/^def showterms():$/;"	kind:function	line:60
-spimi	../diskindex.py	/^    spimi = Spimi(1024*1000, 'data\/script_jsons', 'data\/spimi_blocks')$/;"	kind:variable	line:290
+spimi	../diskindex.py	/^    spimi = Spimi(1024*1000, 'data\/script_jsons', 'data\/spimi_blocks')$/;"	kind:variable	line:356
 split_gram	../kgram.py	/^    def split_gram(self, gram):$/;"	kind:member	line:50
 split_nps_json	../fileparser.py	/^def split_nps_json(origin, destination, key, name=''):$/;"	kind:function	line:5
 stem	../normalize.py	/^def stem(word):$/;"	kind:function	line:15
@@ -176,5 +177,5 @@ text	../fileparser.py	/^    text = text.replace('for educational use only', '')$
 union_sorted_lists	../utils.py	/^def union_sorted_lists(list_one, list_two):$/;"	kind:function	line:55
 utils.py	../utils.py	1;"	kind:file	line:1
 wildcard_query	../query.py	/^    def wildcard_query(self, query):$/;"	kind:member	line:143
-write_block_to_disk	../diskindex.py	/^    def write_block_to_disk(dictionary, destination, block_count, dbcursor):$/;"	kind:member	line:269
-write_postings	../diskindex.py	/^    def write_postings(self, index, dictionary, vocab_positions):$/;"	kind:member	line:39
+write_block_to_disk	../diskindex.py	/^    def write_block_to_disk(dictionary, destination, block_count, dbcursor):$/;"	kind:member	line:278
+write_postings	../diskindex.py	/^    def write_postings(self, index, dictionary, vocab_positions):$/;"	kind:member	line:41

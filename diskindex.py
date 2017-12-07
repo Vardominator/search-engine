@@ -226,7 +226,7 @@ class Spimi():
         conn.commit()
         block_count = 0
         dictionary = OrderedDict()
-        vocab_table_terms = set()
+        vocab_table_terms = []
         # size in bites for number of documents
         size = 4
         for subdir, dirs, files in os.walk(self.origin):
@@ -236,8 +236,8 @@ class Spimi():
                     terms = [query_normalize(term) for term in script['body'].split()]
                     position = 0
                     for term in terms:
-                        vocab_table_terms.add((term,))
-                        if size > self.blocksize and terms.index(term) != len(terms) - 1:
+                        vocab_table_terms.append((term,))
+                        if size > self.blocksize and terms.index(term) == len(terms) - 1:
                             c.execute("INSERT INTO block VALUES (?)", (block_count,))
                             c.executemany("INSERT OR IGNORE INTO vocab (term) VALUES (?)", vocab_table_terms)
                             self.write_block_to_disk(dictionary, block_count, c)
@@ -246,7 +246,7 @@ class Spimi():
                             del dictionary
                             dictionary = {}
                             del vocab_table_terms
-                            vocab_table_terms = set()
+                            vocab_table_terms = []
                             size = 0
                         if term not in dictionary:
                             dictionary[term] = []
@@ -341,4 +341,8 @@ class Spimi():
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     spimi = Spimi(32, 'test/test_docs', 'data/test_spimi_blocks')
+=======
+    spimi = Spimi(20, 'test/test_docs', 'data/test_spimi_blocks')
+>>>>>>> 01157528eb4f4de7f2bb61c0a79175d4c69fef62
