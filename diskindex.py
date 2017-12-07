@@ -105,29 +105,7 @@ class DiskIndex(object):
         postings = list()
         c.execute("SELECT * FROM vocabtable WHERE term=?",(term,))
         for row in c:
-            posting_position = row[1]
-            postings_file.seek(posting_position, 0)
-            number_docs_bytes = postings_file.read(4)
-            number_docs = int.from_bytes(number_docs_bytes, byteorder='big')
-            last_doc_id = 0
-            for d in range(number_docs):
-                doc_id_gap_bytes = postings_file.read(4)
-                doc_id_gap = int.from_bytes(doc_id_gap_bytes, byteorder='big')
-                last_doc_id += doc_id_gap
-                term_freq_bytes = postings_file.read(4)
-                term_freq = int.from_bytes(term_freq_bytes, byteorder='big')
-                current_posting = [last_doc_id, term_freq]
-                if positions:
-                    doc_positions = []
-                    for f in range(term_freq):
-                        position_bytes = postings_file.read(4)
-                        position = int.from_bytes(position_bytes, byteorder='big')
-                        doc_positions.append(position)
-                    current_posting.append(doc_positions)
-                else:
-                    postings_file.seek(term_freq*4, 1)
-                postings.append(current_posting)
-        c.close()
+            postings = self.get_current_posting(postings_file, row[1], positions)
         conn.close()
         postings_file.close()
         return postings
@@ -150,29 +128,7 @@ class DiskIndex(object):
                     index[subliteral] = []
                     c.execute("SELECT * FROM vocabtable WHERE term=?", (subliteral,))
                     for row in c:
-                        posting_position = row[1]
-                        postings_file.seek(posting_position, 0)
-                        number_docs_bytes = postings_file.read(4)
-                        number_docs = int.from_bytes(number_docs_bytes, byteorder='big')
-                        last_doc_id = 0
-                        for d in range(number_docs):
-                            doc_id_gap_bytes = postings_file.read(4)
-                            doc_id_gap = int.from_bytes(doc_id_gap_bytes, byteorder='big')
-                            last_doc_id += doc_id_gap
-                            term_freq_bytes = postings_file.read(4)
-                            term_freq = int.from_bytes(term_freq_bytes, byteorder='big')
-                            current_posting = [last_doc_id, term_freq]
-                            if positions:
-                                doc_positions = []
-                                for f in range(term_freq):
-                                    position_bytes = postings_file.read(4)
-                                    position = int.from_bytes(position_bytes, byteorder='big')
-                                    doc_positions.append(position)
-                                current_posting.append(doc_positions)
-                            else:
-                                postings_file.seek(term_freq*4, 1)
-                            index[subliteral].append(current_posting)
-
+                        index[subliteral] = self.get_current_posting(postings_file, row[1], positions)
         postings_file.close()
         conn.close()
         return index
@@ -195,6 +151,31 @@ class DiskIndex(object):
                 heapq.heappush(heap, (-score/ld[0], doc))
         return [(key, -value) for value, key in heapq.nsmallest(k, heap)]
 
+    @staticmethod
+    def get_current_posting(postings_file, posting_position, positions):
+        postings = []
+        postings_file.seek(posting_position, 0)
+        number_docs_bytes = postings_file.read(4)
+        number_docs = int.from_bytes(number_docs_bytes, byteorder='big')
+        last_doc_id = 0
+        for d in range(number_docs):
+            doc_id_gap_bytes = postings_file.read(4)
+            doc_id_gap = int.from_bytes(doc_id_gap_bytes, byteorder='big')
+            last_doc_id += doc_id_gap
+            term_freq_bytes = postings_file.read(4)
+            term_freq = int.from_bytes(term_freq_bytes, byteorder='big')
+            current_posting = [last_doc_id, term_freq]
+            if positions:
+                doc_positions = []
+                for f in range(term_freq):
+                    position_bytes = postings_file.read(4)
+                    position = int.from_bytes(position_bytes, byteorder='big')
+                    doc_positions.append(position)
+                current_posting.append(doc_positions)
+            else:
+                postings_file.seek(term_freq*4, 1)
+            postings.append(current_posting)
+        return postings
 
 
 class Spimi():
@@ -203,9 +184,6 @@ class Spimi():
         self.origin = origin
         self.destination = destination
         self.index = self.build()
-
-    def get_postings(self):
-        pass
 
     def build(self):
         if not os.path.exists(self.destination):
@@ -348,16 +326,6 @@ class Spimi():
     @staticmethod
     def pack_weight(term_map):
         return struct.pack("d", sqrt(sum([(1 + log(val))**2 for val in term_map.values()])))
-
-    def get_k_scores(self, docs, k):
-        heap = []
-        with open('{}docWeights.bin'.format(self.destination), 'rb') as f:
-            for doc, score in docs.items():
-                f.seek(8*(doc))
-                length = f.read(8)
-                ld = struct.unpack('d', length)
-                heapq.heappush(heap, (-score/ld[0], doc))
-        return [(key, -value) for value, key in heapq.nsmallest(k, heap)]
 
 if __name__ == "__main__":
     spimi = Spimi(1024, 'test/test_docs', 'data/test_spimi_blocks')
