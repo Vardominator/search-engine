@@ -363,8 +363,4 @@ class Spimi():
         return [(key, -value) for value, key in heapq.nsmallest(k, heap)]
 
 if __name__ == "__main__":
-<<<<<<< HEAD
-    spimi = Spimi(20, 'test/test_docs', 'data/test_spimi_blocks')
-=======
     spimi = Spimi(1024, 'test/test_docs', 'data/test_spimi_blocks')
->>>>>>> e33f7479bb97b0aa2ba4013f5f55a5297de24165
