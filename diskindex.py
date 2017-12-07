@@ -237,7 +237,7 @@ class Spimi():
                     position = 0
                     for term in terms:
                         vocab_table_terms.add((term,))
-                        if size > self.blocksize:
+                        if size > self.blocksize and terms.index(term) != len(terms) - 1:
                             c.execute("INSERT INTO block VALUES (?)", (block_count,))
                             c.executemany("INSERT OR IGNORE INTO vocab (term) VALUES (?)", vocab_table_terms)
                             self.write_block_to_disk(dictionary, self.destination, block_count, c)
@@ -276,7 +276,6 @@ class Spimi():
 
     @staticmethod
     def write_block_to_disk(dictionary, destination, block_count, dbcursor):
-        print(dictionary.keys())
         with open('{}/block{}.bin'.format(destination, block_count), 'wb') as block_output:
             term_positions = []
             for term in dictionary.keys():
@@ -354,4 +353,4 @@ class Spimi():
 
 
 if __name__ == "__main__":
-    spimi = Spimi(20, 'test/test_docs', 'data/test_spimi_blocks')
+    spimi = Spimi(1024*1000, 'data/script_jsons', 'data/spimi_blocks')
