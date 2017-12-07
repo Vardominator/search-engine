@@ -1,70 +1,14 @@
 import heapq
-import pickle
 import sqlite3
 import struct
 
-import sys
 import json
 import os
 from collections import OrderedDict, defaultdict
 from glob import glob
 from math import sqrt, log
-from operator import itemgetter
 from normalize import *
-import memoryindex
 from memoryindex import PositionalPosting
-
-class IndexWriter(object):
-    """Writes inverted index to disk. Terms are extracted from the index.
-       The terms are written to disk and the positions of the terms are
-       stored in a list. These positions are then used to to write the
-       postings to disk."""
-
-    def __init__(self, docs_dir='data/documents', path='bin/'):
-        self.docs_dir = docs_dir
-        self.path = path
-        self.vocab = set()
-        self.docids = []
-
-    def build_index(self, processed_docs):
-        """Calls member methods to write vocab and postings to disk."""
-        indexes = memoryindex.create_index(processed_docs, self.path)
-        index = indexes[0]
-        kgram_index = indexes[1]
-        with open('{}index.bin'.format(self.path), 'wb') as f:
-            pickle.dump(index, f)
-        with open('{}kgram.bin'.format(self.path), 'wb') as f:
-            pickle.dump(kgram_index, f)
-        dictionary = list(index.keys())
-        vocab_positions = [None]*len(dictionary)
-        self.write_postings(index, dictionary, vocab_positions)
-
-    def write_postings(self, index, dictionary, vocab_positions):
-        """Writes postings to disk."""
-        term_positions = list()
-        postings_file = open('{}postings.bin'.format(self.path), 'wb')
-        conn = sqlite3.connect('{}vocabtable.db'.format(self.path))
-        c = conn.cursor()
-        c.execute('''DROP TABLE if exists vocabtable''')
-        conn.commit()
-        c.execute('''CREATE TABLE vocabtable (term TEXT, position INTEGER)''')
-        for term in dictionary:
-            postings = index[term]
-            term_positions.append((term, postings_file.tell()))
-            postings_file.write((len(postings)).to_bytes(4, byteorder='big'))
-            last_docid = 0
-            for posting in postings:
-                postings_list = posting.postings_list
-                postings_file.write((postings_list[0] - last_docid).to_bytes(4, byteorder='big'))
-                last_docid = postings_list[0]
-                postings_file.write((len(postings_list[1])).to_bytes(4, byteorder='big'))
-                for position in postings_list[1]:
-                    postings_file.write((position).to_bytes(4, byteorder='big'))
-        c.executemany("INSERT INTO vocabtable VALUES (?, ?)",term_positions)
-        conn.commit()
-        conn.close()
-        postings_file.close()
-
 
 class DiskIndex(object):
     """Uses disk index and user query to create in-memory index with terms
@@ -204,7 +148,6 @@ class Spimi():
 
         conn.commit()
         doc_weights = open('{}/docWeights.bin'.format(self.destination), 'wb')
-        term_map = defaultdict(int)
         block_count = 0
         dictionary = OrderedDict()
         vocab_table_terms = []
@@ -213,6 +156,7 @@ class Spimi():
         for subdir, dirs, files in os.walk(self.origin):
             files = sorted(files)
             for file in files:
+                term_map = defaultdict(int)
                 with open('{}/{}'.format(subdir, file), 'r') as script_file:
                     script = json.load(script_file)
                     preterms = script['body'].split()
@@ -334,7 +278,9 @@ class Spimi():
 
     @staticmethod
     def pack_weight(term_map):
-        return struct.pack("d", sqrt(sum([(1 + log(val))**2 for val in term_map.values()])))
+        weight = sqrt(sum([(1 + log(val))**2 for val in term_map.values()]))
+        print(weight)
+        return struct.pack("d", weight)
 
 if __name__ == "__main__":
     spimi = Spimi(1024, 'test/test_docs', 'data/test_spimi_blocks')

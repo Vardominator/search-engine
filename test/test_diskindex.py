@@ -25,8 +25,9 @@ if not os.path.exists('test/bin'):
 
 def test_index_creation():
     """Checking postings file is created when ran"""
-    iw = diskindex.IndexWriter(docs_dir='test/test_docs',path=PATH)
-    iw.build_index(TEST_DOCS)
+    #iw = diskindex.IndexWriter(docs_dir='test/test_docs',path=PATH)
+    #iw.build_index(TEST_DOCS)
+    diskindex.Spimi(blocksize=32, origin='test/test_docs', destination=PATH)
     assert os.path.isfile('{}postings.bin'.format(PATH))
 
 def test_all_files_exist():
