@@ -6,8 +6,9 @@ import struct
 import sys
 import json
 import os
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from glob import glob
+from math import sqrt, log
 from operator import itemgetter
 from normalize import query_normalize
 import memoryindex
@@ -197,7 +198,7 @@ class DiskIndex(object):
 
 
 class Spimi():
-    def __init__(self, blocksize, origin='', destination=''):
+    def __init__(self, blocksize=1000000000, origin='', destination=''):
         self.blocksize = blocksize
         self.origin = origin
         self.destination = destination
@@ -224,6 +225,8 @@ class Spimi():
         c.execute('CREATE TABLE sorted_vocab (id INTEGER PRIMARY KEY, term TEXT)')
 
         conn.commit()
+        doc_weights = open('{}/docWeights.bin'.format(self.destination), 'wb')
+        term_map = defaultdict(int)
         block_count = 0
         dictionary = OrderedDict()
         vocab_table_terms = []
@@ -236,6 +239,7 @@ class Spimi():
                     terms = [query_normalize(term) for term in script['body'].split()]
                     position = 0
                     for term in terms:
+                        term_map[term] += 1
                         vocab_table_terms.append((term,))
                         if size > self.blocksize and terms.index(term) == len(terms) - 1:
                             c.execute("INSERT INTO block VALUES (?)", (block_count,))
@@ -261,12 +265,14 @@ class Spimi():
                             size += 4
                         size += 4
                         position += 1
+                doc_weights.write(self.pack_weight(term_map))
 
             if size <= self.blocksize:
                 c.execute("INSERT INTO block VALUES (?)", (block_count, ))
                 c.executemany("INSERT OR IGNORE INTO vocab (term) VALUES (?)", vocab_table_terms)
                 self.write_block_to_disk(dictionary, block_count, c)
 
+        doc_weights.close()
         c.execute('INSERT INTO sorted_vocab (term) SELECT DISTINCT term FROM vocab ORDER BY term')
         conn.commit()
         self.merge(c)
@@ -339,10 +345,19 @@ class Spimi():
                 block_postings[-1].add_position(position)
         return block_postings
 
+    @staticmethod
+    def pack_weight(term_map):
+        return struct.pack("d", sqrt(sum([(1 + log(val))**2 for val in term_map.values()])))
+
+    def get_k_scores(self, docs, k):
+        heap = []
+        with open('{}docWeights.bin'.format(self.destination), 'rb') as f:
+            for doc, score in docs.items():
+                f.seek(8*(doc))
+                length = f.read(8)
+                ld = struct.unpack('d', length)
+                heapq.heappush(heap, (-score/ld[0], doc))
+        return [(key, -value) for value, key in heapq.nsmallest(k, heap)]
 
 if __name__ == "__main__":
-<<<<<<< HEAD
-    spimi = Spimi(32, 'test/test_docs', 'data/test_spimi_blocks')
-=======
-    spimi = Spimi(20, 'test/test_docs', 'data/test_spimi_blocks')
->>>>>>> 01157528eb4f4de7f2bb61c0a79175d4c69fef62
+    spimi = Spimi(1024, 'test/test_docs', 'data/test_spimi_blocks')
