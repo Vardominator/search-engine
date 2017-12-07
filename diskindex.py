@@ -224,14 +224,14 @@ class Spimi():
         conn.commit()
         block_count = 0
         dictionary = OrderedDict()
+        vocab_table_terms = set()
         # size in bites for number of documents
         size = 4
         for subdir, dirs, files in os.walk(self.origin):
-            for file in files:
+            for file in sorted(files):
                 with open('{}/{}'.format(subdir, file), 'r') as script_file:
                     script = json.load(script_file)
                     terms = [query_normalize(term) for term in script['body'].split()]
-                    vocab_table_terms = set()
                     position = 0
                     for term in terms:
                         vocab_table_terms.add((term,))
@@ -247,6 +247,7 @@ class Spimi():
                             vocab_table_terms = set()
                             size = 0
                         if term not in dictionary:
+                            print(file)
                             dictionary[term] = [(files.index(file), [])]
                             # size in bytes for docid
                             size += 4
@@ -259,6 +260,7 @@ class Spimi():
 
             if size <= self.blocksize:
                 c.execute("INSERT INTO block VALUES (?)", (block_count, ))
+                c.executemany("INSERT OR IGNORE INTO vocab (term) VALUES (?)", vocab_table_terms)
                 self.write_block_to_disk(dictionary, self.destination, block_count, c)
         
         c.execute('INSERT INTO sorted_vocab (term) SELECT term FROM vocab ORDER BY term')
