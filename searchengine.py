@@ -1,7 +1,7 @@
-from flask import Flask, request
 import json
 import os
 from collections import defaultdict
+from flask import Flask, request
 from diskindex import *
 from normalize import stem
 from query import QueryProcessor

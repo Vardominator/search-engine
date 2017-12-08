@@ -41,7 +41,7 @@ class QueryProcessor(object):
     def check_spelling_boolean(self, query, vocab):
         """Checks each term in query for spelling correction, returns new string
            if corrections are made"""
-        terms = re.findall("\w+", query)
+        terms = re.findall(r"\w+", query)
         new_terms = [term if ('*' in term or remove_special_characters(term) in vocab) else self.select_best_spelling(term) for term in terms]
         if not terms == new_terms:
             if all(new_terms):
@@ -69,8 +69,7 @@ class QueryProcessor(object):
     def ranked_query(self, query, k):
         """Returns the k most relevant documents from the corpus for a query,
         using the "term at a time" algorithm"""
-        A = defaultdict(int)
-        heap = []
+        accumulator = defaultdict(int)
         query = [word if '*' in word else query_normalize(word) for word in query.split()]
         for term in query:
             if '*' in term:
@@ -81,8 +80,8 @@ class QueryProcessor(object):
                 wqt = math.log(1 + self.num_docs/len(postings))
                 for posting in postings:
                     wdt = 1 + math.log(posting[1])
-                    A[posting[0]] += wdt * wqt
-        return self.disk_index.get_k_scores(A, k)
+                    accumulator[posting[0]] += wdt * wqt
+        return self.disk_index.get_k_scores(accumulator, k)
 
     def boolean_query(self, query):
         """Returns the documents that satisfy a boolean query using the index"""
@@ -114,25 +113,8 @@ class QueryProcessor(object):
                     continue
                 subliterals = [query_normalize(term) for term in subliterals]
                 combined_postings_lists = list(chain.from_iterable([index[subliteral] for subliteral in subliterals]))
-                combined_postings_lists = sorted(combined_postings_lists, key=lambda t:t[0])
-                docs_with_current_query = []
-                for key,doc_postings in groupby(combined_postings_lists, itemgetter(0)):
-                    doc_postings = list(doc_postings)
-                    if len(subliterals) > 1:
-                        if len(doc_postings) == len(subliterals):
-                            subliteral_found = True
-                            postings = [x[2] for x in doc_postings]
-                            for i in range(len(postings)):
-                                postings[i] = [posting - i for posting in postings[i]]
-                            results = postings[0]
-                            for p in postings[1:]:
-                                results = intersect_sorted_lists(results, p)
-                            results = list(results)
-                            if len(results) > 0:
-                                docs_with_current_query.append(doc_postings[0][0])
-                    else:
-                        docs_with_current_query.append(doc_postings[0][0])
-                docs_with_all_queries.append(docs_with_current_query)
+                combined_postings_lists = sorted(combined_postings_lists, key=lambda t: t[0])
+                docs_with_all_queries.append(self.get_current_postings(combined_postings_lists, subliterals))
             if docs_with_all_queries:
                 ids_intersect = docs_with_all_queries[0]
                 for l in docs_with_all_queries[1:]:
@@ -157,3 +139,22 @@ class QueryProcessor(object):
         literals = query.split('+')
         literals = list(map(str.strip, literals))
         return literals
+
+    @staticmethod
+    def get_current_postings(combined_postings_lists, subliterals):
+        docs_with_current_query = []
+        for key, doc_postings in groupby(combined_postings_lists, itemgetter(0)):
+            doc_postings = list(doc_postings)
+            if len(subliterals) > 1:
+                if len(doc_postings) == len(subliterals):
+                    postings = [x[2] for x in doc_postings]
+                    for i in range(len(postings)):
+                        postings[i] = [posting - i for posting in postings[i]]
+                    results = postings[0]
+                    for p in postings[1:]:
+                        results = list(intersect_sorted_lists(results, p))
+                    if results:
+                        docs_with_current_query.append(doc_postings[0][0])
+            else:
+                docs_with_current_query.append(doc_postings[0][0])
+        return docs_with_current_query

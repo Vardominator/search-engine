@@ -9,7 +9,7 @@ class KGramIndex(object):
        index includes functions to retrieve words containing each of a
        list of grams."""
 
-    def __init__(self, num_grams, vocab = None):
+    def __init__(self, num_grams, vocab=None):
         self.num_grams = num_grams
         self.index = defaultdict(list)
         if vocab:
@@ -35,8 +35,7 @@ class KGramIndex(object):
            Ensure that grams include '$' symbol"""
         if gram in self.index:
             return self.index[gram]
-        else:
-            return []
+        return []
 
     def get_intersection_grams(self, grams):
         """Gets words that share the grams in common."""
@@ -71,11 +70,12 @@ class KGramIndex(object):
         candidates = set()
         for gram in query_word_grams:
             candidates |= set(self.get_words(gram))
-        ranked = [word for word in candidates if calculate_jacard_coeff(query_word_grams, self.get_kgrams(word))>threshold]
+        ranked = [word for word in candidates if calculate_jacard_coeff(query_word_grams, self.get_kgrams(word)) > threshold]
         if ranked:
             return self.all_min_edits(ranked, qword)
 
-    def all_min_edits(self, items, qword):
+    @staticmethod
+    def all_min_edits(items, qword):
         """Returns each candidate with the minimum edit distance"""
         min_val = edit_dist(qword, items[-1])
         min_list = []

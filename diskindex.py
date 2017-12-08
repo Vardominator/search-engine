@@ -7,7 +7,7 @@ import os
 from collections import OrderedDict, defaultdict
 from glob import glob
 from math import sqrt, log
-from normalize import *
+from normalize import query_normalize, normalize, remove_special_characters
 from memoryindex import PositionalPosting
 
 class DiskIndex(object):
@@ -25,7 +25,7 @@ class DiskIndex(object):
         frequencies = list()
         for term in terms:
             term = query_normalize(term)
-            c.execute("SELECT * FROM vocabtable WHERE term=?",(term,))
+            c.execute("SELECT * FROM vocabtable WHERE term=?", (term,))
             row = c.fetchone()
             number_docs = 0
             if row:
@@ -47,7 +47,7 @@ class DiskIndex(object):
         c = conn.cursor()
         term = query_normalize(term)
         postings = list()
-        c.execute("SELECT * FROM vocabtable WHERE term=?",(term,))
+        c.execute("SELECT * FROM vocabtable WHERE term=?", (term,))
         for row in c:
             postings = self.get_current_posting(postings_file, row[1], positions)
         conn.close()
@@ -180,7 +180,7 @@ class Spimi():
                                 size = 0
                             if term not in dictionary:
                                 dictionary[term] = []
-                            if len(dictionary[term]) == 0:
+                            if not dictionary[term]:
                                 dictionary[term].append(PositionalPosting(files.index(file), [position]))
                             else:
                                 last_posting = dictionary[term][-1]
@@ -209,7 +209,6 @@ class Spimi():
         with open('{}/block{}.bin'.format(self.destination, block_count), 'wb') as block_output:
             term_positions = []
             for term in dictionary.keys():
-                print(term)
                 postings = dictionary[term]
                 term_positions.append((block_output.tell(), term, block_count))
                 self.write_postings(block_output, postings)
@@ -225,10 +224,10 @@ class Spimi():
         dbcursor.execute("SELECT count(*) FROM sorted_vocab")
         num_terms = dbcursor.fetchone()[0]
         postings_file = open('{}/postings.bin'.format(self.destination), 'wb')
-        for i in range(1,num_terms + 1):
+        for i in range(1, num_terms + 1):
             dbcursor.execute("SELECT term FROM sorted_vocab WHERE id = ?", (i,))
             term = dbcursor.fetchone()[0]
-            dbcursor.execute("SELECT block_id, position FROM vocab_block WHERE term = ?",(term,))
+            dbcursor.execute("SELECT block_id, position FROM vocab_block WHERE term = ?", (term,))
             blocks = dbcursor.fetchall()
             postings = []
             for block in blocks:
@@ -236,10 +235,10 @@ class Spimi():
                 postings.extend(block_postings)
             position = self.write_postings(postings_file, postings)
             term_positions.append((term, position))
-        dbcursor.executemany("INSERT INTO vocabtable VALUES (?, ?)",term_positions)
-        for f in block_list:
-            f.close()
-            os.remove(f.name)
+        dbcursor.executemany("INSERT INTO vocabtable VALUES (?, ?)", term_positions)
+        for block in block_list:
+            block.close()
+            os.remove(block.name)
         postings_file.close()
 
     @staticmethod
@@ -279,8 +278,7 @@ class Spimi():
     @staticmethod
     def pack_weight(term_map):
         weight = sqrt(sum([(1 + log(val))**2 for val in term_map.values()]))
-        print(weight)
         return struct.pack("d", weight)
 
 if __name__ == "__main__":
-    spimi = Spimi(1024, 'test/test_docs', 'data/test_spimi_blocks')
+    spimi = Spimi(origin='data/movie_jsons', destination='bin')

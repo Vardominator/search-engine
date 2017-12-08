@@ -1,12 +1,11 @@
 """Utility module"""
 import numpy as np
-from math import sqrt, log
 
 def calculate_jacard_coeff(q_set, t_set):
-        """Calculates jacard coefficient using alternate
-           definition of union"""
-        n = len(q_set.intersection(t_set))
-        return n / float(len(q_set) + len(t_set) - n)
+    """Calculates jacard coefficient using alternate
+        definition of union"""
+    n = len(q_set.intersection(t_set))
+    return n / float(len(q_set) + len(t_set) - n)
 
 
 def edit_dist(qword, tword):
@@ -22,11 +21,11 @@ def edit_dist(qword, tword):
     for s in qword:
         current_row = previous_row + 1
         current_row[1:] = np.minimum(
-                current_row[1:],
-                np.add(previous_row[:-1], tword != s))
+            current_row[1:],
+            np.add(previous_row[:-1], tword != s))
         current_row[1:] = np.minimum(
-                current_row[1:],
-                current_row[0:-1] + 1)
+            current_row[1:],
+            current_row[0:-1] + 1)
         previous_row = current_row
     return previous_row[-1]
 
@@ -39,7 +38,6 @@ def intersect_sorted_lists(list_one, list_two):
     iter_two = iter(list_two)
     left = next(iter_one)
     right = next(iter_two)
-    cur = -1
     while True:
         try:
             if left < right:
