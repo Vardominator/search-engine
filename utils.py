@@ -90,3 +90,13 @@ def union_sorted_lists(list_one, list_two):
         yield last
     for i in iter_one:
         yield i
+
+
+def ResultIter(cursor, arraysize=10000):
+    'An iterator that uses fetchmany to keep memory usage down'
+    while True:
+        results = cursor.fetchmany(arraysize)
+        if not results:
+            break
+        for result in results:
+            yield result

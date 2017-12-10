@@ -9,6 +9,7 @@ from glob import glob
 from math import sqrt, log
 from normalize import query_normalize, normalize, remove_special_characters
 from memoryindex import PositionalPosting
+from utils import ResultIter
 
 class DiskIndex(object):
     """Uses disk index and user query to create in-memory index with terms
@@ -136,16 +137,13 @@ class Spimi():
         conn = sqlite3.connect('{}/vocabtable.db'.format(self.destination))
         c = conn.cursor()
         c.execute('DROP TABLE if exists vocab')
-        c.execute('CREATE TABLE vocab (termID INTEGER PRIMARY KEY, term TEXT)')
+        c.execute('CREATE TABLE vocab (term TEXT PRIMARY KEY)')
         c.execute('DROP TABLE if exists block')
         c.execute('CREATE TABLE block (block_id INTEGER PRIMARY KEY)')
         c.execute('DROP TABLE if exists vocab_block')
         c.execute('''CREATE TABLE vocab_block (position INTEGER, term TEXT, block_id INTEGER,
                                               FOREIGN KEY(term) REFERENCES vocab(term),
                                               FOREIGN KEY(block_id) REFERENCES block(block_id))''')
-        c.execute('DROP TABLE if exists sorted_vocab')
-        c.execute('CREATE TABLE sorted_vocab (id INTEGER PRIMARY KEY, term TEXT)')
-
         conn.commit()
         doc_weights = open('{}/docWeights.bin'.format(self.destination), 'wb')
         block_count = 0
@@ -199,7 +197,7 @@ class Spimi():
                 self.write_block_to_disk(dictionary, block_count, c)
 
         doc_weights.close()
-        c.execute('INSERT INTO sorted_vocab (term) SELECT DISTINCT term FROM vocab ORDER BY term')
+        c.execute('CREATE INDEX index_vocab_block ON vocab_block (term)')
         conn.commit()
         self.merge(c)
         conn.commit()
@@ -221,24 +219,34 @@ class Spimi():
         block_list = []
         for name in sorted(glob("{}/block*".format(self.destination))):
             block_list.append(open(name, 'rb'))
-        dbcursor.execute("SELECT count(*) FROM sorted_vocab")
-        num_terms = dbcursor.fetchone()[0]
         postings_file = open('{}/postings.bin'.format(self.destination), 'wb')
-        for i in range(1, num_terms + 1):
-            dbcursor.execute("SELECT term FROM sorted_vocab WHERE id = ?", (i,))
-            term = dbcursor.fetchone()[0]
-            dbcursor.execute("SELECT block_id, position FROM vocab_block WHERE term = ?", (term,))
-            blocks = dbcursor.fetchall()
+        dbcursor.execute("SELECT DISTINCT term FROM vocab ORDER BY term")
+        # Using generator and getting 10000 results at a time, second cursor so place is maintained
+        conn2 = sqlite3.connect('{}/vocabtable.db'.format(self.destination))
+        inner_cursor = conn2.cursor()
+        for term in ResultIter(dbcursor):
+            term = term[0]
+            inner_cursor.execute("SELECT block_id, position FROM vocab_block WHERE term = ?", (term,))
+            blocks = inner_cursor.fetchall()
             postings = []
             for block in blocks:
                 block_postings = self.get_block_postings(block_list[block[0]], block[1])
                 postings.extend(block_postings)
             position = self.write_postings(postings_file, postings)
             term_positions.append((term, position))
-        dbcursor.executemany("INSERT INTO vocabtable VALUES (?, ?)", term_positions)
+            if len(term_positions) > 10000:
+                inner_cursor.executemany("INSERT INTO vocabtable VALUES (?, ?)", term_positions)
+                term_positions = []
+        conn2.commit()
+        conn2.close()
+        if term_positions:
+            dbcursor.executemany("INSERT INTO vocabtable VALUES (?, ?)", term_positions)
         for block in block_list:
             block.close()
             os.remove(block.name)
+        dbcursor.execute('DROP TABLE if exists block')
+        dbcursor.execute('DROP TABLE if exists vocab_block')
+        dbcursor.execute('DROP TABLE if exists vocab')
         postings_file.close()
 
     @staticmethod
@@ -281,4 +289,4 @@ class Spimi():
         return struct.pack("d", weight)
 
 if __name__ == "__main__":
-    spimi = Spimi(origin='data/movie_jsons', destination='bin')
+    spimi = Spimi(100000000, origin='data/movie_jsons', destination='bin')
