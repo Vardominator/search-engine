@@ -255,6 +255,7 @@ data/imsdb_movie_scripts/*
 data/script_jsons/*
 data/spimi_blocks/*
 data/test_spimi_blocks/*
+data/spimi_analysis/blocks/*
 bin_backup/
 
 # Compiled python
