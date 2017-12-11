@@ -171,10 +171,8 @@ class Spimi():
                                 self.write_block_to_disk(dictionary, block_count, c)
                                 conn.commit()
                                 block_count += 1
-                                del dictionary
-                                dictionary = {}
-                                del vocab_table_terms
-                                vocab_table_terms = []
+                                dictionary.clear()
+                                vocab_table_terms.clear()
                                 size = 0
                             if term not in dictionary:
                                 dictionary[term] = []
@@ -236,7 +234,7 @@ class Spimi():
             term_positions.append((term, position))
             if len(term_positions) > 10000:
                 inner_cursor.executemany("INSERT INTO vocabtable VALUES (?, ?)", term_positions)
-                term_positions = []
+                term_positions.clear()
         conn2.commit()
         conn2.close()
         if term_positions:
