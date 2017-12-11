@@ -155,9 +155,9 @@ class Spimi():
             files = sorted(files)
             for file in files:
                 term_map = defaultdict(int)
-                with open('{}/{}'.format(subdir, file), 'r') as script_file:
-                    script = json.load(script_file)
-                    preterms = script['body'].split()
+                with open('{}/{}'.format(subdir, file), 'r') as f:
+                    json_object = json.load(f)
+                    preterms = json_object['body'].split()
                     position = 0
                     for word in preterms:
                         word = remove_special_characters(word)
@@ -287,4 +287,4 @@ class Spimi():
         return struct.pack("d", weight)
 
 if __name__ == "__main__":
-    spimi = Spimi(100000000, origin='data/movie_jsons', destination='bin')
+    spimi = Spimi(100000000, origin='data/script_jsons', destination='data/spimi_blocks')

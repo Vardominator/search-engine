@@ -5,9 +5,8 @@ import pandas
 from bokeh.plotting import figure, output_file, show
 from diskindex import Spimi
 
-start = 10
-end = 100000000
-blocksizes = np.logspace(1, 8, num=8)
+
+blocksizes = np.logspace(3, 9, num=7)
 path = 'data/spimi_analysis'
 
 if not os.path.exists(path):
@@ -20,19 +19,20 @@ with open('{}/blocksize_time.csv'.format(path), 'w') as f:
         start_time = time.time()
         spimi = Spimi(int(blocksize), 'data/script_jsons', '{}/blocks'.format(path))
         end_time = time.time()
-        elapsed = blocksize * 2
+        elapsed = end_time - start_time
+        print(elapsed)
         f.write('{},{}\n'.format(blocksize, elapsed))
 
 df = pandas.read_csv('{}/blocksize_time.csv'.format(path))
-x = df.time
-y = df.blocksize
+y = df.time
+x = df.blocksize
 
 p = figure(
     tools="pan,box_zoom,reset,save",
-    title="Blocksize vs Time",
-    x_axis_label="Time",
-    y_axis_label="Blocksize",
-    y_axis_type="log"
+    title="Time vs Blocksize",
+    x_axis_label="Blocksize",
+    y_axis_label="Time",
+    x_axis_type="log"
 )
 
 p.line(x, y, line_width=1)

@@ -61,4 +61,4 @@ top.location.href=location.href
 
 
 if __name__ == "__main__":
-    scripts_to_json('data/imsdb_movies', 'data/movie_jsons')
+    scripts_to_json('data/imsdb_movie_scripts', 'data/script_jsons')
