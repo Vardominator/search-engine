@@ -165,15 +165,6 @@ class Spimi():
                         for term in terms:
                             term_map[term] += 1
                             vocab_table_terms.append((term,))
-                            if size > self.blocksize and terms.index(term) == len(terms) - 1:
-                                c.execute("INSERT INTO block VALUES (?)", (block_count,))
-                                c.executemany("INSERT OR IGNORE INTO vocab (term) VALUES (?)", vocab_table_terms)
-                                self.write_block_to_disk(dictionary, block_count, c)
-                                conn.commit()
-                                block_count += 1
-                                dictionary.clear()
-                                vocab_table_terms.clear()
-                                size = 0
                             if term not in dictionary:
                                 dictionary[term] = []
                             if not dictionary[term]:
@@ -188,6 +179,15 @@ class Spimi():
                             size += 4
                             position += 1
                 doc_weights.write(self.pack_weight(term_map))
+                if size > self.blocksize:
+                    c.execute("INSERT INTO block VALUES (?)", (block_count,))
+                    c.executemany("INSERT OR IGNORE INTO vocab (term) VALUES (?)", vocab_table_terms)
+                    self.write_block_to_disk(dictionary, block_count, c)
+                    conn.commit()
+                    block_count += 1
+                    dictionary.clear()
+                    vocab_table_terms.clear()
+                    size = 0
 
             if size <= self.blocksize:
                 c.execute("INSERT INTO block VALUES (?)", (block_count, ))
