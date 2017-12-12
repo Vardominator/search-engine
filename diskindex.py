@@ -178,7 +178,7 @@ class Spimi():
                                     dictionary[term].append(PositionalPosting(files.index(file), [position]))
                                 size += 4
                             size += 4
-                            position += 1
+                        position += 1
                 doc_weights.write(self.pack_weight(term_map))
                 if size > self.blocksize:
                     c.execute("INSERT INTO block VALUES (?)", (block_count,))
