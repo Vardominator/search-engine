@@ -22,6 +22,7 @@ with open('{}/blocksize_time.csv'.format(path), 'w') as f:
         elapsed = end_time - start_time
         print(elapsed)
         f.write('{},{}\n'.format(blocksize, elapsed))
+        del spimi
 
 df = pandas.read_csv('{}/blocksize_time.csv'.format(path))
 y = df.time

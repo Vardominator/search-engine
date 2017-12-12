@@ -154,6 +154,7 @@ class Spimi():
         for subdir, dirs, files in os.walk(self.origin):
             files = sorted(files)
             for file in files:
+                print(files.index(file))
                 term_map = defaultdict(int)
                 with open('{}/{}'.format(subdir, file), 'r') as f:
                     json_object = json.load(f)
@@ -189,10 +190,10 @@ class Spimi():
                     vocab_table_terms.clear()
                     size = 0
 
-            if size <= self.blocksize:
-                c.execute("INSERT INTO block VALUES (?)", (block_count, ))
-                c.executemany("INSERT OR IGNORE INTO vocab (term) VALUES (?)", vocab_table_terms)
-                self.write_block_to_disk(dictionary, block_count, c)
+            # if size <= self.blocksize:
+            c.execute("INSERT INTO block VALUES (?)", (block_count, ))
+            c.executemany("INSERT OR IGNORE INTO vocab (term) VALUES (?)", vocab_table_terms)
+            self.write_block_to_disk(dictionary, block_count, c)
 
         doc_weights.close()
         c.execute('CREATE INDEX index_vocab_block ON vocab_block (term)')
@@ -207,15 +208,16 @@ class Spimi():
             for term in dictionary.keys():
                 postings = dictionary[term]
                 term_positions.append((block_output.tell(), term, block_count))
-                self.write_postings(block_output, postings)
+                self.write_postings(block_output, postings, term)
             dbcursor.executemany("INSERT INTO vocab_block VALUES (?, ?, ?)", term_positions)
 
     def merge(self, dbcursor):
+        print("Merging...")
         dbcursor.execute('DROP TABLE if exists vocabtable')
         dbcursor.execute('CREATE TABLE vocabtable (term TEXT PRIMARY KEY, position INTEGER)')
         term_positions = []
         block_list = []
-        for name in sorted(glob("{}/block*".format(self.destination))):
+        for name in sorted(glob("{}/block*".format(self.destination)), key=lambda x: int(x.split('/')[-1][5:-4])):
             block_list.append(open(name, 'rb'))
         postings_file = open('{}/postings.bin'.format(self.destination), 'wb')
         dbcursor.execute("SELECT DISTINCT term FROM vocab ORDER BY term")
@@ -230,7 +232,7 @@ class Spimi():
             for block in blocks:
                 block_postings = self.get_block_postings(block_list[block[0]], block[1])
                 postings.extend(block_postings)
-            position = self.write_postings(postings_file, postings)
+            position = self.write_postings(postings_file, postings, term)
             term_positions.append((term, position))
             if len(term_positions) > 10000:
                 inner_cursor.executemany("INSERT INTO vocabtable VALUES (?, ?)", term_positions)
@@ -248,13 +250,17 @@ class Spimi():
         postings_file.close()
 
     @staticmethod
-    def write_postings(postings_file, postings):
+    def write_postings(postings_file, postings, term):
         start_position = postings_file.tell()
         postings_file.write((len(postings)).to_bytes(4, byteorder='big'))
         last_doc_id = 0
         for posting in postings:
             postings_list = posting.postings_list
-            postings_file.write((postings_list[0] - last_doc_id).to_bytes(4, byteorder='big'))
+            try:
+                postings_file.write((postings_list[0] - last_doc_id).to_bytes(4, byteorder='big'))
+            except Exception:
+                print('docID:{}, last_doc_id:{}'.format(postings_list[0], last_doc_id, term))
+                raise
             postings_file.write(len(postings_list[1]).to_bytes(4, byteorder='big'))
             last_doc_id = postings_list[0]
             for position in postings_list[1]:
@@ -287,4 +293,4 @@ class Spimi():
         return struct.pack("d", weight)
 
 if __name__ == "__main__":
-    spimi = Spimi(100000000, origin='data/script_jsons', destination='data/spimi_blocks')
+    spimi = Spimi(1000, origin='data/test_script_jsons', destination='data/test_spimi_blocks')
