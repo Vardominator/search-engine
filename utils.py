@@ -92,7 +92,7 @@ def union_sorted_lists(list_one, list_two):
         yield i
 
 
-def ResultIter(cursor, arraysize=10000):
+def result_iter(cursor, arraysize=10000):
     'An iterator that uses fetchmany to keep memory usage down'
     while True:
         results = cursor.fetchmany(arraysize)

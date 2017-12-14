@@ -1,12 +1,12 @@
-import time
 import os
+from timeit import default_timer as time
 import numpy as np
 import pandas
 from bokeh.plotting import figure, output_file, show
 from diskindex import Spimi
 
 
-blocksizes = np.logspace(3, 9, num=7)
+blocksizes = np.logspace(6, 9, num=10)
 path = 'data/spimi_analysis'
 
 if not os.path.exists(path):
@@ -16,10 +16,9 @@ with open('{}/blocksize_time.csv'.format(path), 'w') as f:
     f.write('blocksize,time\n')
     for blocksize in blocksizes:
         print(blocksize)
-        start_time = time.time()
+        start_time = time()
         spimi = Spimi(int(blocksize), 'data/script_jsons', '{}/blocks'.format(path))
-        end_time = time.time()
-        elapsed = end_time - start_time
+        elapsed = time() - start_time
         print(elapsed)
         f.write('{},{}\n'.format(blocksize, elapsed))
         del spimi

@@ -1,4 +1,5 @@
 import heapq
+import re
 import sqlite3
 import struct
 
@@ -9,7 +10,7 @@ from glob import glob
 from math import sqrt, log
 from normalize import query_normalize, normalize, remove_special_characters
 from memoryindex import PositionalPosting
-from utils import ResultIter
+from utils import result_iter
 
 class DiskIndex(object):
     """Uses disk index and user query to create in-memory index with terms
@@ -131,10 +132,11 @@ class Spimi():
         self.index = self.build()
 
     def build(self):
+        print("Building...")
         if not os.path.exists(self.destination):
             os.makedirs(self.destination)
 
-        conn = sqlite3.connect('{}/vocabtable.db'.format(self.destination))
+        conn = sqlite3.connect('{}/temp.db'.format(self.destination))
         c = conn.cursor()
         c.execute('DROP TABLE if exists vocab')
         c.execute('CREATE TABLE vocab (term TEXT PRIMARY KEY)')
@@ -154,7 +156,6 @@ class Spimi():
         for subdir, dirs, files in os.walk(self.origin):
             files = sorted(files)
             for file in files:
-                print(files.index(file))
                 term_map = defaultdict(int)
                 with open('{}/{}'.format(subdir, file), 'r') as f:
                     json_object = json.load(f)
@@ -201,6 +202,7 @@ class Spimi():
         self.merge(c)
         conn.commit()
         conn.close()
+        os.remove('{}/temp.db'.format(self.destination))
 
     def write_block_to_disk(self, dictionary, block_count, dbcursor):
         with open('{}/block{}.bin'.format(self.destination, block_count), 'wb') as block_output:
@@ -213,18 +215,20 @@ class Spimi():
 
     def merge(self, dbcursor):
         print("Merging...")
-        dbcursor.execute('DROP TABLE if exists vocabtable')
-        dbcursor.execute('CREATE TABLE vocabtable (term TEXT PRIMARY KEY, position INTEGER)')
         term_positions = []
         block_list = []
-        for name in sorted(glob("{}/block*".format(self.destination)), key=lambda x: int(x.split('/')[-1][5:-4])):
+        outconn = sqlite3.connect('{}/vocabtable.db'.format(self.destination))
+        out_cur = outconn.cursor()
+        out_cur.execute('DROP TABLE if exists vocabtable')
+        out_cur.execute('CREATE TABLE vocabtable (term TEXT PRIMARY KEY, position INTEGER)')
+        for name in sorted(glob("{}/block*".format(self.destination)), key=lambda x: int(re.split(r'(/+|\\+)', x)[-1][5:-4])):
             block_list.append(open(name, 'rb'))
         postings_file = open('{}/postings.bin'.format(self.destination), 'wb')
         dbcursor.execute("SELECT DISTINCT term FROM vocab ORDER BY term")
         # Using generator and getting 10000 results at a time, second cursor so place is maintained
-        conn2 = sqlite3.connect('{}/vocabtable.db'.format(self.destination))
+        conn2 = sqlite3.connect('{}/temp.db'.format(self.destination))
         inner_cursor = conn2.cursor()
-        for term in ResultIter(dbcursor):
+        for term in result_iter(dbcursor):
             term = term[0]
             inner_cursor.execute("SELECT block_id, position FROM vocab_block WHERE term = ?", (term,))
             blocks = inner_cursor.fetchall()
@@ -235,18 +239,18 @@ class Spimi():
             position = self.write_postings(postings_file, postings, term)
             term_positions.append((term, position))
             if len(term_positions) > 10000:
-                inner_cursor.executemany("INSERT INTO vocabtable VALUES (?, ?)", term_positions)
+                out_cur.executemany("INSERT INTO vocabtable VALUES (?, ?)", term_positions)
+                outconn.commit()
                 term_positions.clear()
-        conn2.commit()
+        inner_cursor.close()
         conn2.close()
         if term_positions:
-            dbcursor.executemany("INSERT INTO vocabtable VALUES (?, ?)", term_positions)
+            out_cur.executemany("INSERT INTO vocabtable VALUES (?, ?)", term_positions)
+            outconn.commit()
+        outconn.close()
         for block in block_list:
             block.close()
             os.remove(block.name)
-        dbcursor.execute('DROP TABLE if exists block')
-        dbcursor.execute('DROP TABLE if exists vocab_block')
-        dbcursor.execute('DROP TABLE if exists vocab')
         postings_file.close()
 
     @staticmethod
@@ -259,7 +263,7 @@ class Spimi():
             try:
                 postings_file.write((postings_list[0] - last_doc_id).to_bytes(4, byteorder='big'))
             except Exception:
-                print('docID:{}, last_doc_id:{}'.format(postings_list[0], last_doc_id, term))
+                print('docID:{}, last_doc_id:{}'.format(postings_list[0], last_doc_id))
                 raise
             postings_file.write(len(postings_list[1]).to_bytes(4, byteorder='big'))
             last_doc_id = postings_list[0]
