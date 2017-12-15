@@ -1,63 +1,34 @@
 # Vardo's & Nick's Bada$$ Search Engine
+Search Engine semester-long project for CECS 529 at California State University, Long Beach
 
-## Python Set Up
-### Install Python 3.5+
-* Run the following:
-  * sudo apt-get update
-  * sudo apt-get install python3
+## Prerequisites
+python3.5+, pip and virtualenv
+node and bower
 
-### Install Necessary Packages
-* Navigate to repository directory
-* Run the following:
-  * pip install -r requirements.txt
+## Installation
+### Python
+Navigate to desired directory and create a virtual environment.
+Install necessary packages.
+```
+pip install -r requirements.txt
+```
 
-## GUI Set Up
-### Install Semantic UI Dependencies
-#### Install latest version of node.js
-* Run the following:
-  * sudo apt-get update
-  * sudo apt-get install nodejs
-  * sudo apt-get install npm
+### Javascript
+Navigate to project directory.
+Install Semantic UI with node.
+```
+npm install semantic-ui --save
+```
+Build with gulp.
+```
+cd semantic
+gulp build
+```
 
-#### Install latest version of Semantic UI
-* Navigate to repository directory
-* Run the following:
-  * npm install semantic-ui --save
-
-* Select Express Install
-* Include all modules
-* Leave 'semantic/' as default directory
-* Leave default output directory
-* Navigate to 'semantic/'
-* Run the following:
-  * gulp build
-
-#### Install a CORS plugin for your browser to enable local Http requests
-* Search 'cors' plugin for you browser and install the most popular one
+### Install a CORS plugin for your browser to enable local Http requests
 
 ## Usage
-* Run the following:
-  * python3 searchengine.py
-* Open index.html with favorite browser
-* Enjoy a nice glass of rye
-
-## TODOs
-### Nick
-* Fix Kgram: AND queries
-* More phrase query unit tests (DONE)
-* Milestone 2:
-  * Ranked retrievals (DONE)
-  * Spelling correction (DONE)
-  * Kgram on disk (DONE-ISH)
-  * Calculate document weights (DONE)
-  * New unit tests
-### Vardo
-* Fix phrase queries (DONE)
-* Toggle modes (index and query) in GUI
-* Milestone 2:
-  * Build the index on disk (DONE)
-  * Querying the index (DONE)
-  * B+ tree for vocabulary (DONE)
-### Both
-* Print ranked retrieval results
-* Enjoy a nice glass of rye
+```
+python3 searchengine.py
+```
+Open index.html
