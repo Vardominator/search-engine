@@ -3,7 +3,7 @@ Search Engine semester-long project for CECS 529 at California State University,
 
 ## Prerequisites
 python3.5+, pip and virtualenv
-node and bower
+node, gulp, bower
 
 ## Installation
 ### Python
