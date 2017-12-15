@@ -164,5 +164,3 @@ def test_doc_frequency_word_not_in_index():
     words = ['gabagaool', 'document']
     disk_index = diskindex.DiskIndex(path=PATH)
     assert disk_index.get_doc_frequency(words) == [0, 3]
-
-# TODO: unit tests for get_k_scores

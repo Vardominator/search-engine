@@ -18,6 +18,8 @@ Navigate to project directory.
 Install Semantic UI with node.
 ```
 npm install semantic-ui --save
+
+Express install, set output to /out/
 ```
 Build with gulp.
 ```

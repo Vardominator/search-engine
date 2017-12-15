@@ -88,6 +88,7 @@ class DiskIndex(object):
         return vocab
 
     def get_k_scores(self, docs, k):
+        """Returns the top k scores after dividing each by the document length"""
         heap = []
         with open('{}docWeights.bin'.format(self.path), 'rb') as f:
             for doc, score in docs.items():
@@ -99,6 +100,8 @@ class DiskIndex(object):
 
     @staticmethod
     def get_current_posting(postings_file, posting_position, positions):
+        """Returns the postings at a given position in file, positional
+           information is optional"""
         postings = []
         postings_file.seek(posting_position, 0)
         number_docs_bytes = postings_file.read(4)
@@ -210,10 +213,13 @@ class Spimi():
             for term in dictionary.keys():
                 postings = dictionary[term]
                 term_positions.append((block_output.tell(), term, block_count))
-                self.write_postings(block_output, postings, term)
+                self.write_postings(block_output, postings)
             dbcursor.executemany("INSERT INTO vocab_block VALUES (?, ?, ?)", term_positions)
 
     def merge(self, dbcursor):
+        """Merges blocks created by SPIMI algorithm. Opens all block files, and creates a new database
+           for the final vocab table. Each term's postings are combined and written to a final index
+           file. All blocks are deleted on successful merge."""
         print("Merging...")
         term_positions = []
         block_list = []
@@ -236,7 +242,7 @@ class Spimi():
             for block in blocks:
                 block_postings = self.get_block_postings(block_list[block[0]], block[1])
                 postings.extend(block_postings)
-            position = self.write_postings(postings_file, postings, term)
+            position = self.write_postings(postings_file, postings)
             term_positions.append((term, position))
             if len(term_positions) > 10000:
                 out_cur.executemany("INSERT INTO vocabtable VALUES (?, ?)", term_positions)
@@ -254,7 +260,8 @@ class Spimi():
         postings_file.close()
 
     @staticmethod
-    def write_postings(postings_file, postings, term):
+    def write_postings(postings_file, postings):
+        """Writes postings to a given file and returns the seek position."""
         start_position = postings_file.tell()
         postings_file.write((len(postings)).to_bytes(4, byteorder='big'))
         last_doc_id = 0
@@ -273,6 +280,7 @@ class Spimi():
 
     @staticmethod
     def get_block_postings(block, position):
+        """Retrieves the positional postings from a file at a specified position."""
         block.seek(position)
         number_docs_bytes = block.read(4)
         number_docs = int.from_bytes(number_docs_bytes, byteorder='big')
@@ -293,6 +301,7 @@ class Spimi():
 
     @staticmethod
     def pack_weight(term_map):
+        """Calculates the document weight and packs it into an 8 byte double."""
         weight = sqrt(sum([(1 + log(val))**2 for val in term_map.values()]))
         return struct.pack("d", weight)
 
