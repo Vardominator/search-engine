@@ -19,8 +19,11 @@ def scripts_to_json(origin, destination='movie_jsons'):
     """Cleans script texts and saves as JSON in desired directory"""
     if not os.path.exists(destination):
         os.makedirs(destination)
+    count = 0
     for subdir, dirs, files in os.walk(origin):
         for file in files:
+            if count >= 650:
+                break
             genre = subdir.split('/')[-1]
             with open('{}/{}'.format(subdir, file), 'r') as f:
                 dirty_script = f.read()
@@ -30,6 +33,7 @@ def scripts_to_json(origin, destination='movie_jsons'):
                 script_dict = {'title': title, 'genre': genre, 'body': clean}
                 with open('{}/{}.json'.format(destination, file.split('.')[0]), 'w') as j:
                     j.write(json.dumps(script_dict))
+                count += 1
 
 
 def clean_script(text):
@@ -61,4 +65,4 @@ top.location.href=location.href
 
 
 if __name__ == "__main__":
-    scripts_to_json('data/imsdb_movie_scripts', 'data/script_jsons')
+    scripts_to_json('data/imsdb_movies', 'data/script_jsons')
