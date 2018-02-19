@@ -1,5 +1,6 @@
 # Vardo's & Nick's Bada$$ Search Engine
 Search Engine semester-long project for CECS 529 at California State University, Long Beach
+
 [Final Presentation](https://docs.google.com/presentation/d/1q1gdVXs0PTFQMZDIFqQotHqj9uRcHan5SRfDZv_QHp4/edit?usp=sharing)
 
 ## Prerequisites
